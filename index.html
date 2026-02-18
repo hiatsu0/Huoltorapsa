@@ -18,6 +18,10 @@
             --warning-bg: rgba(255, 0, 0, 0.1);
             --neutral-bg: rgba(199, 199, 199, 0.1);
         }
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
 
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -81,12 +85,14 @@
         .nav-buttons button.primary:hover {
             filter: brightness(90%);
         }
-        .nav-buttons button.report-save-btn.unsaved {
+        .nav-buttons button.report-save-btn.unsaved,
+        .nav-buttons button.config-save-btn.unsaved {
             background-color: #d9534f;
             color: #fff;
             border-color: #d9534f;
         }
-        .nav-buttons button.report-save-btn.unsaved:hover {
+        .nav-buttons button.report-save-btn.unsaved:hover,
+        .nav-buttons button.config-save-btn.unsaved:hover {
             filter: brightness(90%);
             background-color: #d9534f;
         }
@@ -108,6 +114,7 @@
         }
 
         /* Mobile Nav Adjustments */
+        .btn-text-short { display: none; }
         @media (max-width: 600px) {
             .btn-text { display: none; }
             .btn-text-short { display: inline; }
@@ -116,10 +123,6 @@
             .container { padding: 15px; }
 			#btn-select-mode .btn-text,
             #btn-delete-selected .btn-text { display: inline; }
-        }
-        
-        @media (min-width: 601px) {
-            .btn-text-short { display: none; }
         }
 
         /* Views */
@@ -148,6 +151,15 @@
             background-color: #f1f1f1;
             cursor: pointer;
         }
+        .report-list tr.row-selected {
+            background-color: #e9ecef;
+        }
+        .view.selection-mode .report-list tr.row-selected:hover {
+            background-color: #e9ecef;
+        }
+        .col-plate-mobile-vehicle {
+            display: none;
+        }
         
         /* Selection Mode Styles */
         .col-select {
@@ -162,6 +174,73 @@
         .row-checkbox {
             transform: scale(1.2);
             cursor: pointer;
+        }
+        @media (max-width: 600px) {
+            .report-list {
+                border-collapse: separate;
+                border-spacing: 0 8px;
+            }
+            .report-list thead {
+                display: none;
+            }
+            .report-list tbody tr {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                grid-template-areas:
+                    "date customer"
+                    "plate plate";
+                gap: 4px 10px;
+                padding: 10px 12px;
+                border: 1px solid #e5e5e5;
+                border-radius: 8px;
+                background: #fff;
+            }
+            .report-list tbody td {
+                display: block;
+                padding: 0;
+                border-bottom: 0;
+            }
+            .report-list tbody td.col-date {
+                grid-area: date;
+                font-size: 14px;
+                color: #666;
+            }
+            .report-list tbody td.col-customer {
+                grid-area: customer;
+                text-align: right;
+                font-weight: 400;
+                min-width: 0;
+            }
+            .report-list tbody td.col-plate {
+                grid-area: plate;
+                white-space: normal;
+                font-weight: 700;
+            }
+            .report-list tbody td.col-vehicle {
+                display: none;
+            }
+            .report-list tbody td.col-select {
+                display: none;
+            }
+            .col-plate-mobile-vehicle {
+                display: inline;
+                font-size: 13px;
+                color: #666;
+                font-weight: 400;
+            }
+            .view.selection-mode .report-list tbody tr {
+                grid-template-columns: 28px 1fr auto;
+                grid-template-areas:
+                    "check date customer"
+                    "check plate plate";
+            }
+            .view.selection-mode .report-list tbody td.col-select {
+                display: flex;
+                grid-area: check;
+                align-items: flex-start;
+                justify-content: center;
+                padding-top: 2px;
+            }
         }
 
         .search-bar {
@@ -232,6 +311,14 @@
         }
         @media (max-width: 800px) { .form-row { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 400px) { .form-row { grid-template-columns: 1fr; } }
+        @media (max-width: 800px) {
+            .general-info-row .preinfo-group { grid-column: 1 / -1; }
+            .general-info-row .preinfo-input { height: 84px; }
+        }
+        @media (max-width: 400px) {
+            .general-info-row .preinfo-group { grid-column: auto; }
+            .general-info-row .preinfo-input { height: auto; min-height: 112px; }
+        }
 
         .form-group {
             display: flex;
@@ -1016,6 +1103,17 @@
                 margin-top: 10px; background: #fff; white-space: pre-wrap;
             }
             .print-notes-container { page-break-inside: avoid; }
+            .vehicle-item-full { grid-column: 1 / -1; }
+            .vehicle-item-full .vehicle-label {
+                display: block;
+                margin-bottom: 2px;
+            }
+            .vehicle-item-full .vehicle-value {
+                display: block;
+                white-space: pre-wrap;
+                font-size: 12px;
+                font-weight: bold;
+            }
 
             .print-attachments {
                 margin-top: 20px; display: grid;
@@ -1085,10 +1183,10 @@
             <thead>
                 <tr>
                     <th class="col-select"><input type="checkbox" id="select-all" onclick="toggleSelectAll()"></th>
-                    <th>Pvm</th>
-                    <th>Asiakas</th>
-                    <th>Rek.nro.</th>
-                    <th>Ajoneuvo</th>
+                    <th class="col-date">Pvm</th>
+                    <th class="col-customer">Asiakas</th>
+                    <th class="col-plate">Rek.nro.</th>
+                    <th class="col-vehicle">Ajoneuvo</th>
                 </tr>
             </thead>
             <tbody id="report-table-body">
@@ -1117,7 +1215,7 @@
             <div class="document-section">
                 <div class="document-section-header">Yleistiedot</div>
                 <div class="document-section-content">
-                    <div class="form-row">
+                    <div class="form-row general-info-row">
                         <div class="form-group">
                             <label>Asiakas</label>
                             <textarea class="form-control" id="customer_name" rows="4" placeholder="Asiakkaan nimi ja osoite..."></textarea>
@@ -1125,6 +1223,10 @@
                         <div class="form-group">
                             <label>Huoltopäivä</label>
                             <input type="date" class="form-control" id="report_date">
+                        </div>
+                        <div class="form-group preinfo-group">
+                            <label>Esitiedot</label>
+                            <textarea class="form-control preinfo-input" id="pre_info" rows="4" placeholder=""></textarea>
                         </div>
                     </div>
                 </div>
@@ -1226,7 +1328,7 @@
     <!-- CONFIG VIEW -->
     <div id="config-view" class="view">
         <div class="nav-buttons" style="margin-bottom: 20px; text-align: right;">
-            <button type="button" onclick="saveConfig()"><i class="fas fa-save"></i> Tallenna</button>
+            <button type="button" class="config-save-btn" onclick="saveConfig()"><i class="fas fa-save"></i> Tallenna</button>
         </div>
 
         <div class="document-section">
@@ -1316,7 +1418,7 @@
         </div>
 
         <div class="nav-buttons" style="margin-top: 20px; text-align: right;">
-            <button type="button" onclick="saveConfig()"><i class="fas fa-save"></i> Tallenna</button>
+            <button type="button" class="config-save-btn" onclick="saveConfig()"><i class="fas fa-save"></i> Tallenna</button>
         </div>
     </div>
 
@@ -1379,6 +1481,7 @@
                         <div class="vehicle-item"><span class="vehicle-label">VIN</span><span class="vehicle-value" id="p_vin"></span></div>
                         <div class="vehicle-item"><span class="vehicle-label">Moottorikoodi</span><span class="vehicle-value" id="p_engine"></span></div>
                         <div class="vehicle-item"><span class="vehicle-label">Ensirekisteröinti</span><span class="vehicle-value" id="p_regdate"></span></div>
+                        <div id="p_preinfo_row" class="vehicle-item vehicle-item-full" style="display:none;"><span class="vehicle-label">Esitiedot</span><span class="vehicle-value" id="p_preinfo"></span></div>
                     </div>
 
                     <div id="p_maintenance_content"></div>
@@ -1439,6 +1542,9 @@
     let isReportDirty = false;
     let reportDirtyTrackingPaused = false;
     let lastSavedReportSnapshot = '';
+    let isConfigDirty = false;
+    let configDirtyTrackingPaused = false;
+    let lastSavedConfigSnapshot = '';
     let pendingAuthPromise = null;
     let authDialogResolver = null;
     let authLockUntilMs = 0;
@@ -1641,6 +1747,13 @@
         });
     }
 
+    function setConfigDirty(nextValue) {
+        isConfigDirty = !!nextValue;
+        document.querySelectorAll('.config-save-btn').forEach(btn => {
+            btn.classList.toggle('unsaved', isConfigDirty);
+        });
+    }
+
     function withDirtyTrackingPaused(fn) {
         const prev = reportDirtyTrackingPaused;
         reportDirtyTrackingPaused = true;
@@ -1651,6 +1764,16 @@
         }
     }
 
+    function withConfigDirtyTrackingPaused(fn) {
+        const prev = configDirtyTrackingPaused;
+        configDirtyTrackingPaused = true;
+        try {
+            return fn();
+        } finally {
+            configDirtyTrackingPaused = prev;
+        }
+    }
+
     function buildReportPayloadFromEditor() {
         const maintenanceV2 = collectMaintenanceV2ForSave();
         currentReportMaintenance = maintenanceV2;
@@ -1658,6 +1781,7 @@
             id: document.getElementById('report-id').value,
             customer_name: document.getElementById('customer_name').value,
             report_date: document.getElementById('report_date').value,
+            pre_info: document.getElementById('pre_info').value,
             license_plate: document.getElementById('license_plate').value,
             vin: document.getElementById('vin').value,
             vehicle_model: document.getElementById('vehicle_model').value,
@@ -1682,6 +1806,52 @@
         setReportDirty(false);
     }
 
+    function getCurrentConfigSnapshot() {
+        const configJsonInput = document.getElementById('config-json');
+        const rawConfigJson = configJsonInput ? configJsonInput.value : '';
+        let maintenanceItems = null;
+        let maintenanceJsonState = 'valid';
+        try {
+            maintenanceItems = normalizeMaintenanceConfig(JSON.parse(rawConfigJson)).value;
+        } catch (e) {
+            maintenanceJsonState = `invalid:${rawConfigJson}`;
+            maintenanceItems = getMaintenanceItemsFromEditor();
+        }
+
+        const maintenanceSets = getMaintenanceSetsFromEditor(maintenanceItems);
+        const statusLabels = normalizeStatusLabels({
+            done: document.getElementById('conf_status_done') ? document.getElementById('conf_status_done').value : '',
+            not_done: document.getElementById('conf_status_not_done') ? document.getElementById('conf_status_not_done').value : '',
+            na: document.getElementById('conf_status_na') ? document.getElementById('conf_status_na').value : ''
+        });
+        const shopSettings = {
+            company_text: document.getElementById('conf_company_text') ? document.getElementById('conf_company_text').value : '',
+            hide_na_in_print: !!(document.getElementById('conf_hide_na') && document.getElementById('conf_hide_na').checked),
+            accent_color: normalizeAccentColor(document.getElementById('conf_accent_color') ? document.getElementById('conf_accent_color').value : ''),
+            status_labels: statusLabels
+        };
+        const usePassword = !!(document.getElementById('conf_use_password') && document.getElementById('conf_use_password').checked);
+        const newPassword = document.getElementById('conf_api_password') ? (document.getElementById('conf_api_password').value || '') : '';
+        return JSON.stringify({
+            maintenance_items: maintenanceItems,
+            maintenance_items_json_state: maintenanceJsonState,
+            maintenance_sets: maintenanceSets,
+            shop_settings: shopSettings,
+            security_ui: {
+                use_password: usePassword,
+                new_password: newPassword
+            },
+            security_state: {
+                password_enabled: !!(currentConfig.security && currentConfig.security.password_enabled)
+            }
+        });
+    }
+
+    function markCurrentConfigAsSaved() {
+        lastSavedConfigSnapshot = getCurrentConfigSnapshot();
+        setConfigDirty(false);
+    }
+
     function evaluateReportDirtyState() {
         if (reportDirtyTrackingPaused) return;
         if (!lastSavedReportSnapshot) {
@@ -1689,6 +1859,15 @@
             return;
         }
         setReportDirty(getCurrentReportSnapshot() !== lastSavedReportSnapshot);
+    }
+
+    function evaluateConfigDirtyState() {
+        if (configDirtyTrackingPaused) return;
+        if (!lastSavedConfigSnapshot) {
+            setConfigDirty(false);
+            return;
+        }
+        setConfigDirty(getCurrentConfigSnapshot() !== lastSavedConfigSnapshot);
     }
 
     function isEditorViewActive() {
@@ -1734,6 +1913,15 @@
         return ok;
     }
 
+    function confirmDiscardUnsavedConfigChanges(targetLabel) {
+        if (!isConfigViewActive() || !isConfigDirty) return true;
+        const ok = confirm(`Asetuksissa on tallentamattomia muutoksia. Siirrytäänkö näkymään "${targetLabel}" ilman tallennusta?`);
+        if (ok) {
+            markCurrentConfigAsSaved();
+        }
+        return ok;
+    }
+
     function initReportDirtyTracking() {
         const form = document.getElementById('report-form');
         if (form) {
@@ -1741,10 +1929,17 @@
             form.addEventListener('change', evaluateReportDirtyState);
         }
         window.addEventListener('beforeunload', event => {
-            if (!isReportDirty) return;
+            if (!isReportDirty && !isConfigDirty) return;
             event.preventDefault();
             event.returnValue = '';
         });
+    }
+
+    function initConfigDirtyTracking() {
+        const view = document.getElementById('config-view');
+        if (!view) return;
+        view.addEventListener('input', evaluateConfigDirtyState);
+        view.addEventListener('change', evaluateConfigDirtyState);
     }
 
     function escapeHtml(value) {
@@ -2251,6 +2446,7 @@
         }
         document.addEventListener('keydown', handleGlobalShortcuts);
         initReportDirtyTracking();
+        initConfigDirtyTracking();
         loadConfig();
         loadReports();
     });
@@ -2258,6 +2454,7 @@
     // --- Navigation & Views ---
     function showDashboard() {
         if (!confirmDiscardUnsavedReportChanges('Raportit')) return;
+        if (!confirmDiscardUnsavedConfigChanges('Raportit')) return;
         switchView('dashboard-view');
         // If coming back to dashboard, refresh to see changes (e.g. date)
         loadReports();
@@ -2278,6 +2475,7 @@
         const skipBaseline = !!opts.skipBaseline;
 
         if (!skipUnsavedPrompt && !confirmDiscardUnsavedReportChanges('Uusi raportti')) return;
+        if (!skipUnsavedPrompt && !confirmDiscardUnsavedConfigChanges('Uusi raportti')) return;
 
         withDirtyTrackingPaused(() => {
             document.getElementById('report-form').reset();
@@ -2296,36 +2494,41 @@
     }
 
     function showConfig() {
+        if (isConfigViewActive()) return;
         if (!confirmDiscardUnsavedReportChanges('Asetukset')) return;
+        if (!confirmDiscardUnsavedConfigChanges('Asetukset')) return;
         switchView('config-view');
-        initConfigEditor(currentConfig.maintenance_items);
-        initMaintenanceSetEditor(currentConfig.maintenance_sets);
-        const settings = currentConfig.shop_settings || {};
-        const security = currentConfig.security || {};
-        const statusLabels = normalizeStatusLabels(settings.status_labels);
-        document.getElementById('conf_company_text').value = settings.company_text || '';
-        document.getElementById('conf_hide_na').checked = !!settings.hide_na_in_print;
-        document.getElementById('conf_accent_color').value = normalizeAccentColor(settings.accent_color);
-        document.getElementById('conf_status_done').value = statusLabels.done;
-        document.getElementById('conf_status_not_done').value = statusLabels.not_done;
-        document.getElementById('conf_status_na').value = statusLabels.na;
-        document.getElementById('conf_use_password').checked = !!security.password_enabled;
-        document.getElementById('conf_password_label').textContent = security.password_enabled
-            ? 'Vaihda salasana'
-            : 'Aseta salasana';
-        document.getElementById('conf_api_password').value = '';
-        document.getElementById('conf_api_password').placeholder = security.password_enabled
-            ? '********'
-            : 'Anna salasana';
-        updateSecurityPasswordInputState();
-        
-        const preview = document.getElementById('conf_logo_preview');
-        const delBtn = document.getElementById('btn_delete_logo');
-        preview.src = `api/attachment?id=${STATIC_LOGO_ID}&t=${Date.now()}`;
-        preview.onload = function() { preview.style.display = 'block'; delBtn.style.display = 'inline-block'; };
-        preview.onerror = function() { preview.style.display = 'none'; delBtn.style.display = 'none'; };
-        const newSetInput = document.getElementById('new-maintenance-set-name');
-        if (newSetInput) newSetInput.value = '';
+        withConfigDirtyTrackingPaused(() => {
+            initConfigEditor(currentConfig.maintenance_items);
+            initMaintenanceSetEditor(currentConfig.maintenance_sets);
+            const settings = currentConfig.shop_settings || {};
+            const security = currentConfig.security || {};
+            const statusLabels = normalizeStatusLabels(settings.status_labels);
+            document.getElementById('conf_company_text').value = settings.company_text || '';
+            document.getElementById('conf_hide_na').checked = !!settings.hide_na_in_print;
+            document.getElementById('conf_accent_color').value = normalizeAccentColor(settings.accent_color);
+            document.getElementById('conf_status_done').value = statusLabels.done;
+            document.getElementById('conf_status_not_done').value = statusLabels.not_done;
+            document.getElementById('conf_status_na').value = statusLabels.na;
+            document.getElementById('conf_use_password').checked = !!security.password_enabled;
+            document.getElementById('conf_password_label').textContent = security.password_enabled
+                ? 'Vaihda salasana'
+                : 'Aseta salasana';
+            document.getElementById('conf_api_password').value = '';
+            document.getElementById('conf_api_password').placeholder = security.password_enabled
+                ? '********'
+                : 'Anna salasana';
+            updateSecurityPasswordInputState();
+
+            const preview = document.getElementById('conf_logo_preview');
+            const delBtn = document.getElementById('btn_delete_logo');
+            preview.src = `api/attachment?id=${STATIC_LOGO_ID}&t=${Date.now()}`;
+            preview.onload = function() { preview.style.display = 'block'; delBtn.style.display = 'inline-block'; };
+            preview.onerror = function() { preview.style.display = 'none'; delBtn.style.display = 'none'; };
+            const newSetInput = document.getElementById('new-maintenance-set-name');
+            if (newSetInput) newSetInput.value = '';
+        });
+        markCurrentConfigAsSaved();
     }
 
     // --- Selection Mode Logic ---
@@ -2350,7 +2553,13 @@
     }
 
     function updateDeleteButtonState() {
-        const checked = document.querySelectorAll('.row-checkbox:checked').length;
+        let checked = 0;
+        document.querySelectorAll('#report-table-body tr').forEach(tr => {
+            const cb = tr.querySelector('.row-checkbox');
+            const isChecked = !!(cb && cb.checked);
+            tr.classList.toggle('row-selected', isChecked);
+            if (isChecked) checked += 1;
+        });
         const btn = document.getElementById('btn-delete-selected');
         btn.disabled = checked === 0;
         btn.querySelector('.btn-text').textContent = `Poista (${checked})`;
@@ -2463,25 +2672,40 @@
             // Customer Name: First line only
             let customerNameDisplay = r.customer_name || '-';
             customerNameDisplay = customerNameDisplay.split('\n')[0];
+            const dateDisplay = (r.report_date || '-').trim() || '-';
+            const plateDisplay = (r.license_plate || '-').trim() || '-';
+            const vehicleDisplay = (vehicleModel || '-').trim() || '-';
 
             const tr = document.createElement('tr');
             
             // Checkbox Cell
             const tdCheck = document.createElement('td');
             tdCheck.className = 'col-select';
-            tdCheck.innerHTML = `<input type="checkbox" class="row-checkbox" value="${r.id}" onclick="event.stopPropagation(); updateDeleteButtonState();">`;
+            const rowCheckbox = document.createElement('input');
+            rowCheckbox.type = 'checkbox';
+            rowCheckbox.className = 'row-checkbox';
+            rowCheckbox.value = String(r.id);
+            rowCheckbox.addEventListener('click', event => event.stopPropagation());
+            rowCheckbox.addEventListener('change', updateDeleteButtonState);
+            tdCheck.appendChild(rowCheckbox);
             tr.appendChild(tdCheck);
 
             // Data Cells
-            const appendCell = (txt) => {
+            const appendCell = (txt, className = '') => {
                 const td = document.createElement('td');
+                if (className) td.className = className;
                 td.textContent = txt;
                 tr.appendChild(td);
             };
-            appendCell(r.report_date);
-            appendCell(customerNameDisplay);
-            appendCell(r.license_plate);
-            appendCell(vehicleModel);
+            appendCell(dateDisplay, 'col-date');
+            appendCell(customerNameDisplay, 'col-customer');
+
+            const tdPlate = document.createElement('td');
+            tdPlate.className = 'col-plate';
+            tdPlate.innerHTML = `${escapeHtml(plateDisplay)}<span class="col-plate-mobile-vehicle"> - ${escapeHtml(vehicleDisplay)}</span>`;
+            tr.appendChild(tdPlate);
+
+            appendCell(vehicleDisplay, 'col-vehicle');
 
             // Row Click
             tr.onclick = (e) => {
@@ -2502,6 +2726,9 @@
         document.getElementById('btn-prev').disabled = currentPage <= 1;
         document.getElementById('btn-next').disabled = currentPage >= totalPages;
         document.getElementById('pagination-info').textContent = `Sivu ${currentPage} / ${totalPages || 1}`;
+        const selectAll = document.getElementById('select-all');
+        if (selectAll) selectAll.checked = false;
+        updateDeleteButtonState();
     }
 
     // --- Attachments ---
@@ -3402,6 +3629,7 @@
 
             container.appendChild(card);
         });
+        evaluateConfigDirtyState();
     }
 
     function renderMaintenanceSetSection() {
@@ -3595,9 +3823,9 @@
         // Conversion should always require explicit save.
         setReportDirty(true);
         if (nextLegacyItems.length > 0) {
-            alert('Raportin toimenpidemalli päivitettiin nykyisiin asetuksiin. Tarkista mahdolliset "Poistuneet huoltotoimenpiteet" ja korvaa ne nykyisillä vastineillaan.');
+            alert('Raportin toimenpidemalli päivitettiin nykyisiin asetuksiin. Tarkista mahdolliset "Poistuneet huoltotoimenpiteet" ja korvaa ne uusilla vastineillaan. Muista tallentaa raportti.');
         } else {
-            alert('Raportin toimenpidemalli päivitettiin nykyisiin asetuksiin.');
+            alert('Raportin toimenpidemalli päivitettiin nykyisiin asetuksiin. Muista tallentaa raportti.');
         }
     }
 
@@ -3885,6 +4113,7 @@
             document.getElementById('report-id').value = data.id;
             document.getElementById('customer_name').value = data.customer_name || '';
             document.getElementById('report_date').value = data.report_date || '';
+            document.getElementById('pre_info').value = data.pre_info || '';
             document.getElementById('license_plate').value = data.license_plate || '';
             document.getElementById('vin').value = data.vin || '';
             document.getElementById('vehicle_model').value = data.vehicle_model || '';
@@ -3953,6 +4182,7 @@
                 security: security
             })
         });
+        markCurrentConfigAsSaved();
         alert('Asetukset tallennettu!');
         window.location.reload();
     }
@@ -3974,6 +4204,9 @@
         document.getElementById('p_engine').textContent = document.getElementById('engine_code').value;
         document.getElementById('p_regdate').textContent = document.getElementById('registered_date').value;
         document.getElementById('p_mileage').textContent = document.getElementById('mileage').value;
+        const preInfo = document.getElementById('pre_info').value;
+        document.getElementById('p_preinfo').textContent = preInfo;
+        document.getElementById('p_preinfo_row').style.display = preInfo.trim() ? 'block' : 'none';
         
         const notes = document.getElementById('additional_notes').value;
         document.getElementById('p_notes').textContent = notes;
