@@ -214,7 +214,7 @@
             }
             .report-list {
                 border-collapse: separate;
-                border-spacing: 1px 8px;
+                border-spacing: 0px 0px;
             }
             .report-list thead {
                 display: none;
@@ -226,6 +226,7 @@
                     "date customer"
                     "plate plate";
                 gap: 4px 10px;
+                margin-bottom: 2px;
                 padding: 10px 12px;
                 border: 1px solid #e5e5e5;
                 border-color: color-mix(in srgb, var(--primary-color) 24%, #d8e1e6);
@@ -233,6 +234,9 @@
                 background: #fff;
                 box-shadow: 0 2px 8px color-mix(in srgb, var(--primary-color) 9%, transparent);
                 transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+            }
+            .report-list tbody tr:last-child {
+                margin-bottom: 0;
             }
             .report-list tbody tr:hover {
                 background: #fff;
@@ -2938,13 +2942,13 @@
         if (isCalendarMode) {
             if (icon) icon.className = 'fas fa-list';
             if (longText) longText.textContent = 'Lista';
-            if (shortText) shortText.textContent = 'Lista';
+            if (shortText) shortText.textContent = '';
             btn.classList.add('active');
             btn.title = 'Vaihda listanäkymään';
         } else {
             if (icon) icon.className = 'fas fa-calendar-alt';
             if (longText) longText.textContent = 'Kalenteri';
-            if (shortText) shortText.textContent = 'Kalenteri';
+            if (shortText) shortText.textContent = '';
             btn.classList.remove('active');
             btn.title = 'Vaihda kalenterinäkymään';
         }
