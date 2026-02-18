@@ -277,6 +277,108 @@
             margin-bottom: 8px;
             font-size: 15px;
         }
+        .legacy-section-header {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        .legacy-item {
+            background: #f8f9fa;
+            border: 1px dashed #ced4da;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        .legacy-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .legacy-title {
+            margin: 0;
+            color: #842029;
+        }
+        .legacy-appendix {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: normal;
+        }
+        .legacy-status-row {
+            font-size: 14px;
+            color: #555;
+        }
+        .legacy-remove-btn {
+            border: none;
+            background: transparent;
+            color: #a52a37;
+            text-decoration: underline;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 0;
+            white-space: nowrap;
+        }
+        .legacy-remove-btn:hover {
+            color: #842029;
+        }
+        .legacy-map-row {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .legacy-map-select {
+            min-width: 240px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 6px 8px;
+            background: #fff;
+        }
+        .legacy-map-btn {
+            border: 1px solid #0d6efd;
+            background: #0d6efd;
+            color: #fff;
+            border-radius: 4px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .legacy-map-btn:disabled {
+            background: #9ec5fe;
+            border-color: #9ec5fe;
+            cursor: default;
+        }
+        .report-update-banner {
+            border: 1px solid #ffe69c;
+            background: #fff8e1;
+            color: #664d03;
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+        }
+        .report-update-banner p {
+            margin: 0 0 8px 0;
+            line-height: 1.35;
+            font-size: 14px;
+        }
+        .report-update-banner p:last-child {
+            margin-bottom: 0;
+        }
+        .report-update-actions {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .report-update-actions button {
+            border: 1px solid #0d6efd;
+            background: #0d6efd;
+            color: #fff;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+        }
 
         .status-selector {
             display: flex;
@@ -317,13 +419,147 @@
         .status-option[data-value="na"].selected i { color: var(--neutral-color); }
 
         /* Config Editor */
-        .config-editor textarea {
+        .config-help {
+            margin: 0 0 12px;
+            color: #666;
+            font-size: 14px;
+        }
+        .config-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .config-groups {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .config-group {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fafafa;
+            overflow: hidden;
+        }
+        .config-group.dragging {
+            opacity: 0.55;
+        }
+        .config-group.drag-over {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 158, 184, 0.12);
+        }
+        .config-group-header {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 8px;
+            align-items: center;
+            padding: 10px 12px;
+            background: #f3f3f3;
+            border-bottom: 1px solid #e6e6e6;
+        }
+        .drag-handle {
+            cursor: grab;
+            user-select: none;
+            color: #777;
+            font-size: 18px;
+            line-height: 1;
+        }
+        .config-group-header:active .drag-handle,
+        .config-item:active .drag-handle {
+            cursor: grabbing;
+        }
+        .config-title-input,
+        .config-item-input {
             width: 100%;
-            height: 300px;
-            font-family: monospace;
-            padding: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #d4d4d4;
+            border-radius: 4px;
+            padding: 7px 8px;
+            font-size: 14px;
             box-sizing: border-box;
+            background: #fff;
+        }
+        .config-title-input:focus,
+        .config-item-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        .config-group-items {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 10px 12px 12px;
+            min-height: 42px;
+        }
+        .config-group-items.drop-target {
+            background: rgba(0, 158, 184, 0.08);
+        }
+        .config-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 8px;
+            align-items: center;
+            border: 1px solid #e3e3e3;
+            border-radius: 4px;
+            padding: 6px 8px;
+            background: #fff;
+        }
+        .config-item.dragging {
+            opacity: 0.55;
+        }
+        .config-item.drag-over {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 158, 184, 0.12);
+        }
+        .config-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .cfg-btn {
+            border: 1px solid #cfcfcf;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 6px 9px;
+        }
+        .cfg-btn:hover {
+            background: #f5f5f5;
+        }
+        .cfg-btn-danger {
+            border-color: #e0a7ad;
+            color: #a52a37;
+            background: #fff9fa;
+        }
+        .cfg-btn-danger:hover {
+            background: #fff1f3;
+        }
+        .config-json-preview {
+            margin: 0;
+            max-height: 240px;
+            overflow: auto;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f7f7f7;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .config-json-details {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fafafa;
+            padding: 8px;
+        }
+        .config-json-details summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: #555;
+            user-select: none;
+        }
+        .config-json-details[open] summary {
+            margin-bottom: 8px;
         }
 
         /* Attachments */
@@ -614,6 +850,13 @@
             </div>
 
             <!-- Dynamic Maintenance Items -->
+            <div id="report-update-banner" class="report-update-banner" style="display:none;">
+                <p id="report-update-text-1"></p>
+                <p id="report-update-text-2"></p>
+                <div class="report-update-actions">
+                    <button type="button" onclick="updateReportTemplateToCurrentSettings()">Päivitä</button>
+                </div>
+            </div>
             <div id="maintenance-sections-container"></div>
 
             <!-- Additional Work -->
@@ -659,6 +902,10 @@
 
     <!-- CONFIG VIEW -->
     <div id="config-view" class="view">
+        <div class="nav-buttons" style="margin-bottom: 20px; text-align: right;">
+            <button type="button" onclick="saveConfig()"><i class="fas fa-save"></i> Tallenna</button>
+        </div>
+
         <div class="document-section">
             <div class="document-section-header">Yleiset asetukset</div>
             <div class="document-section-content">
@@ -681,13 +928,22 @@
         </div>
 
         <div class="document-section">
-            <div class="document-section-header">Muokkaa huoltokohteita (JSON)</div>
+            <div class="document-section-header">Muokkaa huoltokohteita</div>
             <div class="document-section-content">
-                <p>Muokkaa listaa JSON-muodossa. Varmista syntaksi.</p>
+                <p class="config-help">Voit lisätä, nimetä uudelleen ja poistaa otsikoita ja kohteita. Uudessa tallennusmallissa raportin alkuperäinen rakenne säilytetään raportissa, joten vanhat raportit pysyvät tulostettavina myös asetusten muutosten jälkeen. Jos päivität vanhan raportin nykyisiin asetuksiin, poistetut kohteet näkyvät "Poistuneet huoltotoimenpiteet" -listassa kunnes sovitat niille vastineen tai poistat ne raportilta.</p>
                 <div class="config-editor">
-                    <textarea id="config-json"></textarea>
+                    <div class="config-actions">
+                        <button type="button" class="cfg-btn" onclick="addConfigGroup()"><i class="fas fa-plus"></i> Lisää otsikko</button>
+                    </div>
+                    <div id="config-groups" class="config-groups"></div>
+                    <details class="config-json-details">
+                        <summary>Näytä raaka JSON</summary>
+                        <pre id="config-json-preview" class="config-json-preview"></pre>
+                    </details>
                 </div>
-                <button class="primary" onclick="saveConfig()" style="margin-top:10px; padding: 10px;">Tallenna kaikki muutokset</button>
+                <div class="nav-buttons" style="margin-top: 20px; text-align: right;">
+                    <button type="button" onclick="saveConfig()"><i class="fas fa-save"></i> Tallenna</button>
+                </div>
             </div>
         </div>
     </div>
@@ -695,7 +951,7 @@
 </div>
 
 <!-- Footer (Outside Container) -->
-<div class="app-footer">v1.1 | Makkesoft 2026 | AGPLv3</div>
+<div class="app-footer">v1.2 | Makkesoft 2026 | AGPLv3</div>
 
 <!-- Image Modal -->
 <div id="image-modal" class="modal-overlay" onclick="closeImageModal()">
@@ -771,20 +1027,317 @@
 
 <script>
     // State
+    const MAINTENANCE_SCHEMA_VERSION = 2;
+    const REPORT_MISMATCH_TEXT_1 = 'Tässä raportissa on huoltotoimenpiteitä tai niiden ryhmiä, joita ei enää ole saatavilla asetuksissa määritellyissä toimenpiteissä.';
+    const REPORT_MISMATCH_TEXT_2 = 'Voit päivittää raportin toimenpiteet vastaamaan asetuksia, mutta joudut etsimään aiemmin merkityille huoltokohteille uudet vastineet.';
+    const statusTexts = {
+        'done': 'Suoritettu',
+        'not_done': 'Ei tehty',
+        'na': 'Ei sisälly'
+    };
+    const STATIC_LOGO_ID = 'company_logo';
+
     let currentConfig = { maintenance_items: {}, shop_settings: {} };
-    let currentAttachments = []; 
+    let currentAttachments = [];
     let currentPage = 1;
     let itemsPerPage = 30;
     let totalItems = 0;
     let isSelectionMode = false;
     let searchTimeout = null;
+    let configEditorState = { groups: [] };
+    let configDragState = null;
+    let currentReportMaintenance = { schema_version: MAINTENANCE_SCHEMA_VERSION, groups: [], legacy_items: [] };
+    let currentReportHasSettingsMismatch = false;
+    let currentReportLoadedFromLegacyFormat = false;
 
-    const translations = {
-        'done': '<i class="fas fa-check"></i> Suoritettu',
-        'not_done': '<i class="fas fa-times"></i> Ei tehty',
-        'na': '<span style="color:#ccc">-</span> Ei sisälly'
-    };
-    const STATIC_LOGO_ID = 'company_logo';
+    function nextId(prefix) {
+        const hasCryptoUuid = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function';
+        if (hasCryptoUuid) return `${prefix}_${crypto.randomUUID()}`;
+        return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function nextConfigGroupId() { return nextId('group'); }
+    function nextConfigItemId() { return nextId('item'); }
+    function nextLegacyItemId() { return nextId('legacy'); }
+
+    function normalizeStatus(status) {
+        return Object.prototype.hasOwnProperty.call(statusTexts, status) ? status : 'na';
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function normalizeMaintenanceConfig(maintenanceItems) {
+        const source = (maintenanceItems && typeof maintenanceItems === 'object') ? maintenanceItems : {};
+        const groups = Array.isArray(source.groups) ? source.groups : [];
+        const normalized = { schema_version: MAINTENANCE_SCHEMA_VERSION, groups: [] };
+        const seenGroupIds = new Set();
+        const seenItemIds = new Set();
+        let changed = source.schema_version !== MAINTENANCE_SCHEMA_VERSION || !Array.isArray(source.groups);
+
+        groups.forEach(rawGroup => {
+            if (!rawGroup || typeof rawGroup !== 'object') {
+                changed = true;
+                return;
+            }
+
+            let groupId = (typeof rawGroup.id === 'string' ? rawGroup.id.trim() : '');
+            if (!groupId || seenGroupIds.has(groupId)) {
+                groupId = nextConfigGroupId();
+                changed = true;
+            }
+            seenGroupIds.add(groupId);
+
+            const title = typeof rawGroup.title === 'string' ? rawGroup.title : '';
+            if (typeof rawGroup.title !== 'string') changed = true;
+
+            const rawItems = Array.isArray(rawGroup.items) ? rawGroup.items : [];
+            if (!Array.isArray(rawGroup.items)) changed = true;
+
+            const items = [];
+            rawItems.forEach(rawItem => {
+                let itemId = '';
+                let label = '';
+
+                if (typeof rawItem === 'string') {
+                    label = rawItem;
+                    changed = true;
+                } else if (rawItem && typeof rawItem === 'object') {
+                    itemId = (typeof rawItem.id === 'string') ? rawItem.id.trim() : '';
+                    label = (typeof rawItem.label === 'string')
+                        ? rawItem.label
+                        : ((typeof rawItem.name === 'string') ? rawItem.name : '');
+                    if (typeof rawItem.label !== 'string') changed = true;
+                } else {
+                    changed = true;
+                    return;
+                }
+
+                if (!itemId || seenItemIds.has(itemId)) {
+                    itemId = nextConfigItemId();
+                    changed = true;
+                }
+                seenItemIds.add(itemId);
+                items.push({ id: itemId, label: label });
+            });
+
+            normalized.groups.push({ id: groupId, title: title, items: items });
+        });
+
+        return { value: normalized, changed: changed };
+    }
+
+    function cloneMaintenanceGroups(groups, defaultStatus = 'na') {
+        const source = Array.isArray(groups) ? groups : [];
+        return source.map(group => ({
+            id: (typeof group.id === 'string' ? group.id : nextConfigGroupId()),
+            title: (typeof group.title === 'string' ? group.title : ''),
+            items: (Array.isArray(group.items) ? group.items : []).map(item => ({
+                id: (item && typeof item.id === 'string' && item.id) ? item.id : nextConfigItemId(),
+                label: (item && typeof item.label === 'string') ? item.label : '',
+                status: normalizeStatus(item && item.status ? item.status : defaultStatus)
+            }))
+        }));
+    }
+
+    function getCurrentConfigGroups() {
+        const groups = currentConfig.maintenance_items && Array.isArray(currentConfig.maintenance_items.groups)
+            ? currentConfig.maintenance_items.groups
+            : [];
+        return cloneMaintenanceGroups(groups, 'na');
+    }
+
+    function templateFromGroups(groups) {
+        return (Array.isArray(groups) ? groups : []).map(group => ({
+            id: group.id || '',
+            title: group.title || '',
+            items: (Array.isArray(group.items) ? group.items : []).map(item => ({
+                id: item.id || '',
+                label: item.label || ''
+            }))
+        }));
+    }
+
+    function hasTemplateMismatchWithCurrentSettings(groups) {
+        const left = JSON.stringify(templateFromGroups(groups));
+        const right = JSON.stringify(templateFromGroups(getCurrentConfigGroups()));
+        return left !== right;
+    }
+
+    function normalizeLegacyItems(rawLegacyItems) {
+        const source = Array.isArray(rawLegacyItems) ? rawLegacyItems : [];
+        return source
+            .filter(item => item && typeof item === 'object')
+            .map(item => ({
+                id: (typeof item.id === 'string' && item.id) ? item.id : nextLegacyItemId(),
+                label: (typeof item.label === 'string') ? item.label : '',
+                status: normalizeStatus(item.status)
+            }))
+            .filter(item => item.label.trim().length > 0);
+    }
+
+    function dedupeLegacyItems(items) {
+        const seen = new Set();
+        const out = [];
+        (Array.isArray(items) ? items : []).forEach(item => {
+            if (!item || typeof item !== 'object') return;
+            const label = (typeof item.label === 'string') ? item.label.trim() : '';
+            if (!label) return;
+            const status = normalizeStatus(item.status);
+            const key = `${label.toLocaleLowerCase('fi')}|${status}`;
+            if (seen.has(key)) return;
+            seen.add(key);
+            out.push({
+                id: (typeof item.id === 'string' && item.id) ? item.id : nextLegacyItemId(),
+                label: label,
+                status: status
+            });
+        });
+        return out;
+    }
+
+    function captureStatusesByItemId() {
+        const statuses = {};
+        document.querySelectorAll('.maintenance-item:not(.legacy-item)').forEach(el => {
+            const input = el.querySelector('input');
+            if (!input || !el.dataset.itemId) return;
+            statuses[el.dataset.itemId] = normalizeStatus(input.value);
+        });
+        return statuses;
+    }
+
+    function restoreStatusesByItemId(statuses) {
+        document.querySelectorAll('.maintenance-item:not(.legacy-item)').forEach(el => {
+            if (!el.dataset.itemId) return;
+            const status = statuses[el.dataset.itemId];
+            if (status) selectStatus(el.id, status);
+        });
+    }
+
+    function initializeNewReportMaintenance() {
+        currentReportMaintenance = {
+            schema_version: MAINTENANCE_SCHEMA_VERSION,
+            groups: getCurrentConfigGroups(),
+            legacy_items: []
+        };
+        currentReportHasSettingsMismatch = false;
+        currentReportLoadedFromLegacyFormat = false;
+    }
+
+    function normalizeMaintenanceV2(raw) {
+        if (!raw || typeof raw !== 'object') return null;
+        const sourceGroups = Array.isArray(raw.groups) ? raw.groups : [];
+        const normalizedGroups = cloneMaintenanceGroups(sourceGroups, 'na');
+        const normalizedLegacyItems = dedupeLegacyItems(normalizeLegacyItems(raw.legacy_items));
+        if (normalizedGroups.length === 0 && normalizedLegacyItems.length === 0) return null;
+        return {
+            schema_version: MAINTENANCE_SCHEMA_VERSION,
+            groups: normalizedGroups,
+            legacy_items: normalizedLegacyItems
+        };
+    }
+
+    function buildMaintenanceFromLegacyFlatItems(reportItems) {
+        const flatItems = (reportItems && typeof reportItems === 'object') ? reportItems : {};
+        const groups = getCurrentConfigGroups();
+        const matchedLabels = new Set();
+
+        groups.forEach(group => {
+            group.items.forEach(item => {
+                if (Object.prototype.hasOwnProperty.call(flatItems, item.label)) {
+                    item.status = normalizeStatus(flatItems[item.label]);
+                    matchedLabels.add(item.label);
+                }
+            });
+        });
+
+        const legacy_items = [];
+        Object.entries(flatItems).forEach(([label, status]) => {
+            if (!matchedLabels.has(label)) {
+                legacy_items.push({
+                    id: nextLegacyItemId(),
+                    label: label,
+                    status: normalizeStatus(status)
+                });
+            }
+        });
+
+        return {
+            schema_version: MAINTENANCE_SCHEMA_VERSION,
+            groups: groups,
+            legacy_items: dedupeLegacyItems(legacy_items)
+        };
+    }
+
+    function readMaintenanceForCurrentReport(data) {
+        const v2 = normalizeMaintenanceV2(data.maintenance_v2);
+        if (v2) {
+            currentReportMaintenance = v2;
+            currentReportLoadedFromLegacyFormat = false;
+            currentReportHasSettingsMismatch = hasTemplateMismatchWithCurrentSettings(v2.groups);
+            return;
+        }
+
+        currentReportMaintenance = buildMaintenanceFromLegacyFlatItems(data.items || {});
+        currentReportLoadedFromLegacyFormat = true;
+        currentReportHasSettingsMismatch = true;
+    }
+
+    function collectMaintenanceV2ForSave() {
+        const statusByItemId = captureStatusesByItemId();
+        const groups = cloneMaintenanceGroups(currentReportMaintenance.groups, 'na').map(group => ({
+            id: group.id,
+            title: group.title,
+            items: group.items.map(item => ({
+                id: item.id,
+                label: item.label,
+                status: normalizeStatus(statusByItemId[item.id] || item.status || 'na')
+            }))
+        }));
+        const legacy_items = dedupeLegacyItems(normalizeLegacyItems(currentReportMaintenance.legacy_items));
+        return { schema_version: MAINTENANCE_SCHEMA_VERSION, groups: groups, legacy_items: legacy_items };
+    }
+
+    function flattenMaintenanceItems(maintenanceV2) {
+        const flat = {};
+        const payload = maintenanceV2 && typeof maintenanceV2 === 'object' ? maintenanceV2 : {};
+        (Array.isArray(payload.groups) ? payload.groups : []).forEach(group => {
+            (Array.isArray(group.items) ? group.items : []).forEach(item => {
+                flat[item.label] = normalizeStatus(item.status);
+            });
+        });
+        (Array.isArray(payload.legacy_items) ? payload.legacy_items : []).forEach(item => {
+            flat[item.label] = normalizeStatus(item.status);
+        });
+        return flat;
+    }
+
+    function shouldShowReportUpdateBanner() {
+        const reportId = document.getElementById('report-id');
+        return !!(reportId && reportId.value) && (currentReportHasSettingsMismatch || currentReportLoadedFromLegacyFormat);
+    }
+
+    function updateReportUpdateBanner() {
+        const banner = document.getElementById('report-update-banner');
+        if (!banner) return;
+        const text1 = document.getElementById('report-update-text-1');
+        const text2 = document.getElementById('report-update-text-2');
+        if (shouldShowReportUpdateBanner()) {
+            text1.textContent = REPORT_MISMATCH_TEXT_1;
+            text2.textContent = REPORT_MISMATCH_TEXT_2;
+            banner.style.display = 'block';
+        } else {
+            banner.style.display = 'none';
+            text1.textContent = '';
+            text2.textContent = '';
+        }
+    }
     
     // --- Initialization ---
     document.addEventListener('DOMContentLoaded', () => {
@@ -813,26 +1366,21 @@
         document.getElementById('report-form').reset();
         document.getElementById('report-id').value = '';
         document.getElementById('report_date').valueAsDate = new Date();
-        
+        initializeNewReportMaintenance();
+        renderMaintenanceSections();
+
         currentAttachments = [];
         renderAttachmentList();
-        
-        document.querySelectorAll('.status-option').forEach(el => el.classList.remove('selected'));
-        document.querySelectorAll('.maintenance-item').forEach(item => {
-            const naOption = item.querySelector('.status-option[data-value="na"]');
-            if(naOption) naOption.click();
-        });
 
         switchView('editor-view');
     }
 
     function showConfig() {
         switchView('config-view');
-        document.getElementById('config-json').value = JSON.stringify(currentConfig.maintenance_items, null, 4);
-        if(currentConfig.shop_settings) {
-            document.getElementById('conf_company_text').value = currentConfig.shop_settings.company_text || '';
-            document.getElementById('conf_hide_na').checked = !!currentConfig.shop_settings.hide_na_in_print;
-        }
+        initConfigEditor(currentConfig.maintenance_items);
+        const settings = currentConfig.shop_settings || {};
+        document.getElementById('conf_company_text').value = settings.company_text || '';
+        document.getElementById('conf_hide_na').checked = !!settings.hide_na_in_print;
         
         const preview = document.getElementById('conf_logo_preview');
         const delBtn = document.getElementById('btn_delete_logo');
@@ -900,8 +1448,20 @@
     async function loadConfig() {
         const res = await fetch('api/config?t=' + new Date().getTime());
         const data = await res.json();
-        currentConfig.maintenance_items = data.maintenance_items || {};
+        const normalizedMaintenance = normalizeMaintenanceConfig(data.maintenance_items || {});
+        currentConfig.maintenance_items = normalizedMaintenance.value;
         currentConfig.shop_settings = data.shop_settings || {};
+        if (normalizedMaintenance.changed) {
+            try {
+                await fetch('api/save_config', {
+                    method: 'POST',
+                    body: JSON.stringify({ maintenance_items: currentConfig.maintenance_items })
+                });
+            } catch (e) {
+                console.warn('Maintenance config schema migration save failed', e);
+            }
+        }
+        initializeNewReportMaintenance();
         renderMaintenanceSections();
     }
 
@@ -1105,39 +1665,660 @@
         }
     }
 
+    function initConfigEditor(maintenanceItems) {
+        const normalized = normalizeMaintenanceConfig(maintenanceItems);
+        const sourceGroups = normalized.value.groups;
+        configEditorState = {
+            groups: sourceGroups.map(group => ({
+                id: group.id,
+                title: (group && typeof group.title === 'string') ? group.title : '',
+                items: (group && Array.isArray(group.items) ? group.items : []).map(item => ({
+                    id: (item && typeof item.id === 'string' && item.id) ? item.id : nextConfigItemId(),
+                    label: (item && typeof item.label === 'string') ? item.label : ''
+                }))
+            }))
+        };
+        renderConfigEditor();
+    }
+
+    function getMaintenanceItemsFromEditor() {
+        return {
+            schema_version: MAINTENANCE_SCHEMA_VERSION,
+            groups: configEditorState.groups
+                .map(group => ({
+                    id: (group.id || nextConfigGroupId()),
+                    title: (group.title || '').trim(),
+                    items: group.items
+                        .map(item => ({
+                            id: (item.id || nextConfigItemId()),
+                            label: (item.label || '').trim()
+                        }))
+                        .filter(item => item.label.length > 0)
+                }))
+                .filter(group => group.title.length > 0 || group.items.length > 0)
+        };
+    }
+
+    function updateConfigJsonPreview() {
+        const preview = document.getElementById('config-json-preview');
+        if (!preview) return;
+        preview.textContent = JSON.stringify(getMaintenanceItemsFromEditor(), null, 4);
+    }
+
+    function moveArrayElement(arr, fromIndex, toIndex) {
+        if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= arr.length || toIndex > arr.length) return;
+        const [moved] = arr.splice(fromIndex, 1);
+        arr.splice(toIndex, 0, moved);
+    }
+
+    function findGroupById(groupId) {
+        return configEditorState.groups.find(group => group.id === groupId);
+    }
+
+    function clearConfigDragStyles() {
+        document.querySelectorAll('.config-group, .config-item, .config-group-items').forEach(el => {
+            el.classList.remove('dragging', 'drag-over', 'drop-target');
+        });
+    }
+
+    function onConfigDragEnd() {
+        clearConfigDragStyles();
+        configDragState = null;
+    }
+
+    function onConfigGroupDragStart(event, groupId) {
+        configDragState = { type: 'group', groupId: groupId };
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', groupId);
+        const groupEl = event.target.closest('.config-group');
+        if (groupEl) groupEl.classList.add('dragging');
+    }
+
+    function onConfigGroupDragOver(event) {
+        if (!configDragState || configDragState.type !== 'group') return;
+        event.preventDefault();
+        event.currentTarget.classList.add('drag-over');
+    }
+
+    function onConfigGroupDragLeave(event) {
+        event.currentTarget.classList.remove('drag-over');
+    }
+
+    function onConfigGroupDrop(event, targetGroupId) {
+        if (!configDragState || configDragState.type !== 'group') return;
+        event.preventDefault();
+        event.stopPropagation();
+        const draggedGroupId = configDragState.groupId;
+        const fromIndex = configEditorState.groups.findIndex(group => group.id === draggedGroupId);
+        const targetIndex = configEditorState.groups.findIndex(group => group.id === targetGroupId);
+        if (fromIndex < 0 || targetIndex < 0) {
+            onConfigDragEnd();
+            return;
+        }
+        const rect = event.currentTarget.getBoundingClientRect();
+        let insertIndex = targetIndex + (event.clientY > (rect.top + rect.height / 2) ? 1 : 0);
+        if (fromIndex < insertIndex) insertIndex -= 1;
+        moveArrayElement(configEditorState.groups, fromIndex, insertIndex);
+        onConfigDragEnd();
+        renderConfigEditor();
+    }
+
+    function onConfigItemDragStart(event, groupId, itemId) {
+        configDragState = { type: 'item', groupId: groupId, itemId: itemId };
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', itemId);
+        const itemEl = event.target.closest('.config-item');
+        if (itemEl) itemEl.classList.add('dragging');
+    }
+
+    function onConfigItemDragOver(event) {
+        if (!configDragState || configDragState.type !== 'item') return;
+        event.preventDefault();
+        event.currentTarget.classList.add('drag-over');
+    }
+
+    function onConfigItemDragLeave(event) {
+        event.currentTarget.classList.remove('drag-over');
+    }
+
+    function onConfigItemDrop(event, targetGroupId, targetItemId) {
+        if (!configDragState || configDragState.type !== 'item') return;
+        event.preventDefault();
+        event.stopPropagation();
+
+        const fromGroup = findGroupById(configDragState.groupId);
+        const targetGroup = findGroupById(targetGroupId);
+        if (!fromGroup || !targetGroup) {
+            onConfigDragEnd();
+            return;
+        }
+        const fromIndex = fromGroup.items.findIndex(item => item.id === configDragState.itemId);
+        const targetIndexRaw = targetGroup.items.findIndex(item => item.id === targetItemId);
+        if (fromIndex < 0 || targetIndexRaw < 0) {
+            onConfigDragEnd();
+            return;
+        }
+
+        const [movedItem] = fromGroup.items.splice(fromIndex, 1);
+        let targetIndex = targetIndexRaw;
+        const rect = event.currentTarget.getBoundingClientRect();
+        if (event.clientY > (rect.top + rect.height / 2)) targetIndex += 1;
+        if (fromGroup.id === targetGroup.id && fromIndex < targetIndex) targetIndex -= 1;
+        targetGroup.items.splice(targetIndex, 0, movedItem);
+
+        onConfigDragEnd();
+        renderConfigEditor();
+    }
+
+    function onConfigItemsContainerDragOver(event) {
+        if (!configDragState || configDragState.type !== 'item') return;
+        event.preventDefault();
+        event.currentTarget.classList.add('drop-target');
+    }
+
+    function onConfigItemsContainerDragLeave(event) {
+        event.currentTarget.classList.remove('drop-target');
+    }
+
+    function onConfigItemsContainerDrop(event, targetGroupId) {
+        if (!configDragState || configDragState.type !== 'item') return;
+        event.preventDefault();
+        event.stopPropagation();
+
+        const fromGroup = findGroupById(configDragState.groupId);
+        const targetGroup = findGroupById(targetGroupId);
+        if (!fromGroup || !targetGroup) {
+            onConfigDragEnd();
+            return;
+        }
+
+        const fromIndex = fromGroup.items.findIndex(item => item.id === configDragState.itemId);
+        if (fromIndex < 0) {
+            onConfigDragEnd();
+            return;
+        }
+
+        const [movedItem] = fromGroup.items.splice(fromIndex, 1);
+        targetGroup.items.push(movedItem);
+
+        onConfigDragEnd();
+        renderConfigEditor();
+    }
+
+    function addConfigGroup() {
+        const newGroup = { id: nextConfigGroupId(), title: 'Uusi otsikko', items: [] };
+        configEditorState.groups.push(newGroup);
+        renderConfigEditor();
+        setTimeout(() => {
+            const input = document.querySelector(`[data-group-id="${newGroup.id}"] .config-title-input`);
+            if (input) input.focus();
+        }, 0);
+    }
+
+    function addConfigItem(groupId) {
+        const group = findGroupById(groupId);
+        if (!group) return;
+        const newItem = { id: nextConfigItemId(), label: getUniqueConfigItemLabel('Uusi kohde', groupId) };
+        group.items.push(newItem);
+        renderConfigEditor();
+        setTimeout(() => {
+            const input = document.querySelector(`[data-item-id="${newItem.id}"] .config-item-input`);
+            if (input) input.focus();
+        }, 0);
+    }
+
+    function removeConfigGroup(groupId) {
+        const group = findGroupById(groupId);
+        if (!group) return;
+        if (!confirm(`Poistetaanko otsikko "${group.title || 'Nimeton'}" ja kaikki sen kohteet?`)) return;
+        configEditorState.groups = configEditorState.groups.filter(g => g.id !== groupId);
+        renderConfigEditor();
+    }
+
+    function removeConfigItem(groupId, itemId) {
+        const group = findGroupById(groupId);
+        if (!group) return;
+        const item = group.items.find(entry => entry.id === itemId);
+        if (!item) return;
+        if (!confirm(`Poistetaanko kohde "${item.label || 'Nimeton'}"?`)) return;
+        group.items = group.items.filter(item => item.id !== itemId);
+        renderConfigEditor();
+    }
+
+    function normalizeConfigItemLabel(label) {
+        return (label || '').trim().toLocaleLowerCase('fi');
+    }
+
+    function hasDuplicateConfigItemLabel(label, groupId, excludeItemId = null) {
+        const group = findGroupById(groupId);
+        if (!group) return false;
+        const normalized = normalizeConfigItemLabel(label);
+        if (!normalized) return false;
+        for (const item of group.items) {
+            if (excludeItemId && item.id === excludeItemId) continue;
+            if (normalizeConfigItemLabel(item.label) === normalized) return true;
+        }
+        return false;
+    }
+
+    function getDuplicateConfigItemLabelsInSameGroup() {
+        const duplicates = [];
+        configEditorState.groups.forEach(group => {
+            const seen = new Set();
+            const groupTitle = (group.title || '').trim() || 'Nimeton otsikko';
+            group.items.forEach(item => {
+                const normalized = normalizeConfigItemLabel(item.label);
+                if (!normalized) return;
+                if (seen.has(normalized)) {
+                    duplicates.push({
+                        groupTitle: groupTitle,
+                        label: (item.label || '').trim() || 'Nimeton'
+                    });
+                }
+                seen.add(normalized);
+            });
+        });
+        return duplicates;
+    }
+
+    function getUniqueConfigItemLabel(baseLabel, groupId) {
+        let candidate = baseLabel;
+        let suffix = 2;
+        while (hasDuplicateConfigItemLabel(candidate, groupId)) {
+            candidate = `${baseLabel} ${suffix}`;
+            suffix += 1;
+        }
+        return candidate;
+    }
+
+    function renderConfigEditor() {
+        const groupsContainer = document.getElementById('config-groups');
+        if (!groupsContainer) return;
+        groupsContainer.innerHTML = '';
+
+        configEditorState.groups.forEach(group => {
+            const groupEl = document.createElement('div');
+            groupEl.className = 'config-group';
+            groupEl.dataset.groupId = group.id;
+            groupEl.addEventListener('dragover', onConfigGroupDragOver);
+            groupEl.addEventListener('dragleave', onConfigGroupDragLeave);
+            groupEl.addEventListener('drop', event => onConfigGroupDrop(event, group.id));
+
+            const headerEl = document.createElement('div');
+            headerEl.className = 'config-group-header';
+
+            const groupDragHandle = document.createElement('span');
+            groupDragHandle.className = 'drag-handle';
+            groupDragHandle.textContent = '::';
+            groupDragHandle.title = 'Vedä otsikkoa';
+            groupDragHandle.draggable = true;
+            groupDragHandle.addEventListener('dragstart', event => onConfigGroupDragStart(event, group.id));
+            groupDragHandle.addEventListener('dragend', onConfigDragEnd);
+
+            const titleInput = document.createElement('input');
+            titleInput.type = 'text';
+            titleInput.className = 'config-title-input';
+            titleInput.value = group.title;
+            titleInput.addEventListener('input', () => {
+                group.title = titleInput.value;
+                updateConfigJsonPreview();
+            });
+
+            const addItemButton = document.createElement('button');
+            addItemButton.type = 'button';
+            addItemButton.className = 'cfg-btn';
+            addItemButton.textContent = 'Lisää kohde';
+            addItemButton.addEventListener('click', () => addConfigItem(group.id));
+
+            const removeGroupButton = document.createElement('button');
+            removeGroupButton.type = 'button';
+            removeGroupButton.className = 'cfg-btn cfg-btn-danger';
+            removeGroupButton.textContent = 'Poista otsikko';
+            removeGroupButton.addEventListener('click', () => removeConfigGroup(group.id));
+
+            headerEl.appendChild(groupDragHandle);
+            headerEl.appendChild(titleInput);
+            headerEl.appendChild(addItemButton);
+            headerEl.appendChild(removeGroupButton);
+
+            const itemsEl = document.createElement('div');
+            itemsEl.className = 'config-group-items';
+            itemsEl.dataset.groupId = group.id;
+            itemsEl.addEventListener('dragover', onConfigItemsContainerDragOver);
+            itemsEl.addEventListener('dragleave', onConfigItemsContainerDragLeave);
+            itemsEl.addEventListener('drop', event => onConfigItemsContainerDrop(event, group.id));
+
+            group.items.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'config-item';
+                itemEl.dataset.groupId = group.id;
+                itemEl.dataset.itemId = item.id;
+                itemEl.addEventListener('dragover', onConfigItemDragOver);
+                itemEl.addEventListener('dragleave', onConfigItemDragLeave);
+                itemEl.addEventListener('drop', event => onConfigItemDrop(event, group.id, item.id));
+
+                const itemDragHandle = document.createElement('span');
+                itemDragHandle.className = 'drag-handle';
+                itemDragHandle.textContent = '::';
+                itemDragHandle.title = 'Vedä kohdetta';
+                itemDragHandle.draggable = true;
+                itemDragHandle.addEventListener('dragstart', event => onConfigItemDragStart(event, group.id, item.id));
+                itemDragHandle.addEventListener('dragend', onConfigDragEnd);
+
+                const itemInput = document.createElement('input');
+                itemInput.type = 'text';
+                itemInput.className = 'config-item-input';
+                itemInput.value = item.label;
+                itemInput.dataset.prevValue = item.label;
+                itemInput.addEventListener('input', () => {
+                    item.label = itemInput.value;
+                    updateConfigJsonPreview();
+                });
+                itemInput.addEventListener('change', () => {
+                    const candidate = itemInput.value;
+                    if (hasDuplicateConfigItemLabel(candidate, group.id, item.id)) {
+                        alert(`Nimi "${candidate.trim()}" on jo käytössä tässä otsikossa.`);
+                        itemInput.value = itemInput.dataset.prevValue || '';
+                        item.label = itemInput.value;
+                        itemInput.focus();
+                    } else {
+                        itemInput.dataset.prevValue = itemInput.value;
+                        item.label = itemInput.value;
+                    }
+                    updateConfigJsonPreview();
+                });
+
+                const removeItemButton = document.createElement('button');
+                removeItemButton.type = 'button';
+                removeItemButton.className = 'cfg-btn cfg-btn-danger';
+                removeItemButton.textContent = 'Poista';
+                removeItemButton.addEventListener('click', () => removeConfigItem(group.id, item.id));
+
+                itemEl.appendChild(itemDragHandle);
+                itemEl.appendChild(itemInput);
+                itemEl.appendChild(removeItemButton);
+                itemsEl.appendChild(itemEl);
+            });
+
+            groupEl.appendChild(headerEl);
+            groupEl.appendChild(itemsEl);
+            groupsContainer.appendChild(groupEl);
+        });
+
+        updateConfigJsonPreview();
+    }
+
+    function removeLegacyItem(legacyId, skipConfirm = false) {
+        const legacyItems = Array.isArray(currentReportMaintenance.legacy_items) ? currentReportMaintenance.legacy_items : [];
+        const entry = legacyItems.find(item => item.id === legacyId);
+        if (!entry) return;
+        if (!skipConfirm && !confirm(`Poistetaanko poistunut kohde "${entry.label}" tältä raportilta?`)) return;
+        const statuses = captureStatusesByItemId();
+        currentReportMaintenance.legacy_items = legacyItems.filter(item => item.id !== legacyId);
+        renderMaintenanceSections();
+        restoreStatusesByItemId(statuses);
+    }
+
+    function mapLegacyItemToCurrent(legacyId, targetItemId) {
+        if (!targetItemId) {
+            alert('Valitse ensin vastine nykyisistä huoltokohteista.');
+            return;
+        }
+        const legacyItems = Array.isArray(currentReportMaintenance.legacy_items) ? currentReportMaintenance.legacy_items : [];
+        const legacyItem = legacyItems.find(item => item.id === legacyId);
+        if (!legacyItem) return;
+
+        const targetEl = Array.from(document.querySelectorAll('.maintenance-item:not(.legacy-item)'))
+            .find(el => el.dataset.itemId === targetItemId);
+        if (!targetEl) {
+            alert('Valittua kohdetta ei löytynyt aktiivisesta listasta.');
+            return;
+        }
+
+        const input = targetEl.querySelector('input');
+        const currentStatus = input ? normalizeStatus(input.value) : 'na';
+        if (currentStatus !== 'na' && currentStatus !== legacyItem.status) {
+            const ok = confirm(`Kohteella on jo tila "${statusTexts[currentStatus]}". Korvataanko se tilalla "${statusTexts[legacyItem.status]}"?`);
+            if (!ok) return;
+        }
+
+        selectStatus(targetEl.id, legacyItem.status);
+        removeLegacyItem(legacyId, true);
+    }
+
+    function updateReportTemplateToCurrentSettings() {
+        const existing = collectMaintenanceV2ForSave();
+        const previousItems = [];
+        const byId = new Map();
+        const byLabel = new Map();
+        let counter = 0;
+
+        existing.groups.forEach(group => {
+            group.items.forEach(item => {
+                const entry = {
+                    key: `prev_${counter++}`,
+                    id: item.id,
+                    label: item.label,
+                    status: normalizeStatus(item.status),
+                    group_title: group.title
+                };
+                previousItems.push(entry);
+                if (entry.id && !byId.has(entry.id)) byId.set(entry.id, entry);
+                const normalizedLabel = normalizeConfigItemLabel(entry.label);
+                if (!normalizedLabel) return;
+                if (!byLabel.has(normalizedLabel)) byLabel.set(normalizedLabel, []);
+                byLabel.get(normalizedLabel).push(entry);
+            });
+        });
+
+        const used = new Set();
+        const updatedGroups = getCurrentConfigGroups();
+        updatedGroups.forEach(group => {
+            group.items.forEach(item => {
+                let match = null;
+                if (item.id && byId.has(item.id)) {
+                    match = byId.get(item.id);
+                } else {
+                    const candidates = byLabel.get(normalizeConfigItemLabel(item.label)) || [];
+                    match = candidates.find(entry => !used.has(entry.key)) || null;
+                }
+                if (match) {
+                    item.status = normalizeStatus(match.status);
+                    used.add(match.key);
+                } else {
+                    item.status = 'na';
+                }
+            });
+        });
+
+        const orphaned = previousItems
+            .filter(entry => !used.has(entry.key))
+            .map(entry => ({
+                id: nextLegacyItemId(),
+                label: entry.label,
+                status: normalizeStatus(entry.status)
+            }));
+
+        currentReportMaintenance = {
+            schema_version: MAINTENANCE_SCHEMA_VERSION,
+            groups: updatedGroups,
+            legacy_items: dedupeLegacyItems([...(existing.legacy_items || []), ...orphaned])
+        };
+        currentReportHasSettingsMismatch = false;
+        currentReportLoadedFromLegacyFormat = false;
+        renderMaintenanceSections();
+        alert('Raportin toimenpidemalli päivitettiin nykyisiin asetuksiin. Tarkista "Poistuneet huoltotoimenpiteet" ja sovita tarvittavat vastineet.');
+    }
+
     function renderMaintenanceSections() {
         const container = document.getElementById('maintenance-sections-container');
+        if (!container) return;
         container.innerHTML = '';
-        if (!currentConfig.maintenance_items || !currentConfig.maintenance_items.groups) return;
 
-        currentConfig.maintenance_items.groups.forEach((group, groupIndex) => {
+        const groups = cloneMaintenanceGroups(currentReportMaintenance.groups || [], 'na');
+        const legacyItems = dedupeLegacyItems(normalizeLegacyItems(currentReportMaintenance.legacy_items));
+        currentReportMaintenance.groups = groups;
+        currentReportMaintenance.legacy_items = legacyItems;
+
+        if (legacyItems.length > 0) {
+            const legacySection = document.createElement('div');
+            legacySection.className = 'document-section';
+
+            const header = document.createElement('div');
+            header.className = 'document-section-header legacy-section-header';
+            header.textContent = 'Poistuneet huoltotoimenpiteet';
+
+            const content = document.createElement('div');
+            content.className = 'document-section-content';
+
+            legacyItems.forEach(legacyItem => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'maintenance-item legacy-item';
+                itemEl.dataset.label = legacyItem.label;
+                itemEl.dataset.legacyId = legacyItem.id;
+
+                const titleRow = document.createElement('div');
+                titleRow.className = 'legacy-title-row';
+
+                const titleEl = document.createElement('div');
+                titleEl.className = 'maintenance-title legacy-title';
+                titleEl.textContent = legacyItem.label;
+
+                const appendixEl = document.createElement('span');
+                appendixEl.className = 'legacy-appendix';
+                appendixEl.textContent = ' - Poistunut huoltotoimenpide';
+                titleEl.appendChild(appendixEl);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'legacy-remove-btn';
+                removeBtn.textContent = 'Poista';
+                removeBtn.addEventListener('click', () => removeLegacyItem(legacyItem.id));
+
+                titleRow.appendChild(titleEl);
+                titleRow.appendChild(removeBtn);
+
+                const statusRow = document.createElement('div');
+                statusRow.className = 'legacy-status-row';
+                statusRow.textContent = `Tila: ${statusTexts[legacyItem.status]}`;
+
+                const mapRow = document.createElement('div');
+                mapRow.className = 'legacy-map-row';
+
+                const mapSelect = document.createElement('select');
+                mapSelect.className = 'legacy-map-select';
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = 'Valitse vastine asetuksista...';
+                mapSelect.appendChild(placeholder);
+
+                groups.forEach(group => {
+                    group.items.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        const groupTitle = (group.title || '').trim() || 'Nimeton otsikko';
+                        option.textContent = `${groupTitle} / ${item.label}`;
+                        mapSelect.appendChild(option);
+                    });
+                });
+
+                const mapBtn = document.createElement('button');
+                mapBtn.type = 'button';
+                mapBtn.className = 'legacy-map-btn';
+                mapBtn.textContent = 'Sovita';
+                mapBtn.disabled = groups.length === 0;
+                mapBtn.addEventListener('click', () => mapLegacyItemToCurrent(legacyItem.id, mapSelect.value));
+
+                mapRow.appendChild(mapSelect);
+                mapRow.appendChild(mapBtn);
+
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.value = legacyItem.status;
+
+                itemEl.appendChild(titleRow);
+                itemEl.appendChild(statusRow);
+                itemEl.appendChild(mapRow);
+                itemEl.appendChild(hiddenInput);
+                content.appendChild(itemEl);
+            });
+
+            legacySection.appendChild(header);
+            legacySection.appendChild(content);
+            container.appendChild(legacySection);
+        }
+
+        const optionsMeta = [
+            { value: 'done', icon: 'fa-check-circle', text: 'Suoritettu' },
+            { value: 'not_done', icon: 'fa-times-circle', text: 'Ei tehty' },
+            { value: 'na', icon: 'fa-minus-circle', text: 'Ei sisälly' }
+        ];
+
+        groups.forEach((group, groupIndex) => {
             const section = document.createElement('div');
             section.className = 'document-section';
-            let itemsHtml = '';
+
+            const header = document.createElement('div');
+            header.className = 'document-section-header';
+            header.textContent = group.title;
+
+            const content = document.createElement('div');
+            content.className = 'document-section-content';
+
             group.items.forEach((item, itemIndex) => {
-                const itemId = `item_${groupIndex}_${itemIndex}`;
-                itemsHtml += `
-                    <div class="maintenance-item" id="${itemId}" data-label="${item}">
-                        <div class="maintenance-title">${item}</div>
-                        <div class="status-selector">
-                            <div class="status-option" data-value="done" onclick="selectStatus('${itemId}', 'done')"><i class="fas fa-check-circle"></i> Suoritettu</div>
-                            <div class="status-option" data-value="not_done" onclick="selectStatus('${itemId}', 'not_done')"><i class="fas fa-times-circle"></i> Ei tehty</div>
-                            <div class="status-option selected" data-value="na" onclick="selectStatus('${itemId}', 'na')"><i class="fas fa-minus-circle"></i> Ei sisälly</div>
-                        </div>
-                        <input type="hidden" name="status_${itemId}" value="na">
-                    </div>`;
+                const itemDomId = `item_${groupIndex}_${itemIndex}`;
+                const itemEl = document.createElement('div');
+                itemEl.className = 'maintenance-item';
+                itemEl.id = itemDomId;
+                itemEl.dataset.label = item.label;
+                itemEl.dataset.groupId = group.id;
+                itemEl.dataset.itemId = item.id;
+
+                const titleEl = document.createElement('div');
+                titleEl.className = 'maintenance-title';
+                titleEl.textContent = item.label;
+
+                const selector = document.createElement('div');
+                selector.className = 'status-selector';
+                const selectedStatus = normalizeStatus(item.status);
+                optionsMeta.forEach(meta => {
+                    const option = document.createElement('div');
+                    option.className = `status-option${meta.value === selectedStatus ? ' selected' : ''}`;
+                    option.dataset.value = meta.value;
+                    option.innerHTML = `<i class="fas ${meta.icon}"></i> ${escapeHtml(meta.text)}`;
+                    option.addEventListener('click', () => selectStatus(itemDomId, meta.value));
+                    selector.appendChild(option);
+                });
+
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = `status_${itemDomId}`;
+                hiddenInput.value = selectedStatus;
+
+                itemEl.appendChild(titleEl);
+                itemEl.appendChild(selector);
+                itemEl.appendChild(hiddenInput);
+                content.appendChild(itemEl);
             });
-            section.innerHTML = `<div class="document-section-header">${group.title}</div><div class="document-section-content">${itemsHtml}</div>`;
+
+            section.appendChild(header);
+            section.appendChild(content);
             container.appendChild(section);
         });
+
+        updateReportUpdateBanner();
     }
 
     window.selectStatus = function(itemId, status) {
         const container = document.getElementById(itemId);
-        container.querySelector('input').value = status;
+        if (!container) return;
+        const input = container.querySelector('input');
+        if (!input) return;
+        const normalized = normalizeStatus(status);
+        input.value = normalized;
         container.querySelectorAll('.status-option').forEach(opt => {
             opt.classList.remove('selected');
-            if (opt.dataset.value === status) opt.classList.add('selected');
+            if (opt.dataset.value === normalized) opt.classList.add('selected');
         });
     }
 
@@ -1154,6 +2335,8 @@
     }
 
     async function saveReport(silent = false) {
+        const maintenanceV2 = collectMaintenanceV2ForSave();
+        currentReportMaintenance = maintenanceV2;
         const report = {
             id: document.getElementById('report-id').value,
             customer_name: document.getElementById('customer_name').value,
@@ -1166,11 +2349,12 @@
             mileage: document.getElementById('mileage').value,
             additional_notes: document.getElementById('additional_notes').value,
             mechanic_signature: document.getElementById('mechanic_signature').value,
-            items: {},
+            maintenance_schema_version: MAINTENANCE_SCHEMA_VERSION,
+            maintenance_v2: maintenanceV2,
+            items: flattenMaintenanceItems(maintenanceV2),
             attachments: currentAttachments
         };
-        document.querySelectorAll('.maintenance-item').forEach(el => report.items[el.dataset.label] = el.querySelector('input').value);
-        
+
         const res = await fetch('api/save_report', { method: 'POST', body: JSON.stringify(report) });
         const result = await res.json();
         if (result.status === 'created' || result.status === 'updated') {
@@ -1186,8 +2370,8 @@
     async function openReport(id) {
         const res = await fetch(`api/report?id=${id}`);
         const data = await res.json();
-        createNewReport(); 
-        
+        createNewReport();
+
         document.getElementById('report-id').value = data.id;
         document.getElementById('customer_name').value = data.customer_name || '';
         document.getElementById('report_date').value = data.report_date || '';
@@ -1203,31 +2387,29 @@
         currentAttachments = data.attachments || [];
         renderAttachmentList();
 
-        if (data.items) {
-            document.querySelectorAll('.maintenance-item').forEach(el => {
-                const status = data.items[el.dataset.label];
-                if (status) selectStatus(el.id, status);
-            });
-        }
+        readMaintenanceForCurrentReport(data);
+        renderMaintenanceSections();
         switchView('editor-view');
     }
-
+	
     async function saveConfig() {
-        try {
-            const maintenanceItems = JSON.parse(document.getElementById('config-json').value);
-            const shopSettings = {
-                company_text: document.getElementById('conf_company_text').value,
-                hide_na_in_print: document.getElementById('conf_hide_na').checked
-            };
-            await fetch('api/save_config', {
-                method: 'POST',
-                body: JSON.stringify({ maintenance_items: maintenanceItems, shop_settings: shopSettings })
-            });
-            alert('Asetukset tallennettu. Lataa sivu uudelleen.');
-            window.location.reload();
-        } catch (e) {
-            alert('Virheellinen JSON! Tarkista syntaksi.');
+        const duplicateLabels = getDuplicateConfigItemLabelsInSameGroup();
+        if (duplicateLabels.length > 0) {
+            const first = duplicateLabels[0];
+            alert(`Sama kohdenimi löytyi saman otsikon alta (${first.groupTitle}: ${first.label}). Korjaa duplikaatit tästä otsikosta ennen tallennusta.`);
+            return;
         }
+        const maintenanceItems = getMaintenanceItemsFromEditor();
+        const shopSettings = {
+            company_text: document.getElementById('conf_company_text').value,
+            hide_na_in_print: document.getElementById('conf_hide_na').checked
+        };
+        await fetch('api/save_config', {
+            method: 'POST',
+            body: JSON.stringify({ maintenance_items: maintenanceItems, shop_settings: shopSettings })
+        });
+        alert('Asetukset tallennettu!');
+        window.location.reload();
     }
 
     async function preparePrint() {
@@ -1262,24 +2444,32 @@
         });
 
         // Maintenance
+        const maintenanceV2 = collectMaintenanceV2ForSave();
+        currentReportMaintenance = maintenanceV2;
         const pContainer = document.getElementById('p_maintenance_content');
         pContainer.innerHTML = '';
-        if(currentConfig.maintenance_items && currentConfig.maintenance_items.groups) {
-            currentConfig.maintenance_items.groups.forEach(group => {
-                let sectionItemsHtml = '';
-                let visibleCount = 0;
-                group.items.forEach(itemLabel => {
-                    const el = Array.from(document.querySelectorAll('.maintenance-item')).find(e => e.dataset.label === itemLabel);
-                    const status = el ? el.querySelector('input').value : 'na';
-                    if (status !== 'na') visibleCount++;
-                    sectionItemsHtml += `<tr class="${status==='na'?'row-na':''}"><td class="print-item-name">${itemLabel}</td><td class="print-item-status status-${status}">${translations[status]}</td></tr>`;
-                });
-                if((!hideNa || (hideNa && visibleCount > 0)) && group.items.length > 0) {
-                     pContainer.innerHTML += `<div class="print-section-title">${group.title}</div><table class="print-items-table"><tbody>${sectionItemsHtml}</tbody></table>`;
-                }
-            });
-        }
 
+        maintenanceV2.groups.forEach(group => {
+            let sectionItemsHtml = '';
+            let visibleCount = 0;
+            group.items.forEach(item => {
+                const status = normalizeStatus(item.status);
+                if (status !== 'na') visibleCount++;
+                sectionItemsHtml += `<tr class="${status === 'na' ? 'row-na' : ''}"><td class="print-item-name">${escapeHtml(item.label)}</td><td class="print-item-status status-${status}">${statusTexts[status]}</td></tr>`;
+            });
+            if ((!hideNa || (hideNa && visibleCount > 0)) && group.items.length > 0) {
+                pContainer.innerHTML += `<div class="print-section-title">${escapeHtml(group.title)}</div><table class="print-items-table"><tbody>${sectionItemsHtml}</tbody></table>`;
+            }
+        });
+
+        const legacyForPrint = (maintenanceV2.legacy_items || []).filter(item => !hideNa || normalizeStatus(item.status) !== 'na');
+        if (legacyForPrint.length > 0) {
+            const rows = legacyForPrint.map(item => {
+                const status = normalizeStatus(item.status);
+                return `<tr class="${status === 'na' ? 'row-na' : ''}"><td class="print-item-name">${escapeHtml(item.label)} (Poistunut huoltotoimenpide)</td><td class="print-item-status status-${status}">${statusTexts[status]}</td></tr>`;
+            }).join('');
+            pContainer.innerHTML += `<div class="print-section-title">Poistuneet huoltotoimenpiteet</div><table class="print-items-table"><tbody>${rows}</tbody></table>`;
+        }
         // Attachments
         const pAttContainer = document.getElementById('p_attachments');
         pAttContainer.innerHTML = '';

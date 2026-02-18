@@ -9,6 +9,8 @@ import base64
 import math
 from datetime import datetime
 import socket
+import webbrowser
+import threading
 
 PORT = 8000
 DB_FILE = "maintenance.db"
@@ -380,21 +382,35 @@ def get_local_ipv4_addresses():
     return sorted(ips)
 
 if __name__ == "__main__":
-    init_db()
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    print("")
-    print("------------------------------------------------")
-    print("| Huoltorapsa v1.1 -palvelin | Makkesoft 2026  |")
-    print("------------------------------------------------")
-    print("")
-    print("Palvelin käynnistyy, voit pienentää tämän ikkunan.")
-    print("Palvelimen voi lopettaa joko painamalla Ctrl+C tai ikkunan ylänurkan ruksista.")
-    print(" ")
-    print("Avaa selaimessa jokin näistä osoitteista:")
-    print(f"  http://localhost:{PORT}/")
-    for ip in get_local_ipv4_addresses():
-        print(f"  http://{ip}:{PORT}/")
-    print(" ")
-    print("Toimintaloki ilmestyy alle:")
-    with socketserver.TCPServer(("", PORT), MaintenanceRequestHandler) as httpd:
-        httpd.serve_forever()
+    try:
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+        init_db()
+        print("")
+        print("------------------------------------------------")
+        print("| Huoltorapsa v1.2 -palvelin | Makkesoft 2026  |")
+        print("------------------------------------------------")
+        print("")
+        print("Palvelin käynnistyy, voit pienentää tämän ikkunan.")
+        print("Palvelimen voi lopettaa joko painamalla Ctrl+C tai ikkunan ylänurkan ruksista.")
+        print(" ")
+        print("Avaa selaimessa jokin näistä osoitteista:")
+        print(f"  http://localhost:{PORT}/")
+        for ip in get_local_ipv4_addresses():
+            print(f"  http://{ip}:{PORT}/")
+        print(" ")
+        print("Toimintaloki ilmestyy alle:")
+
+        # Avaa selain automaattisesti 1.5 sekunnin kuluttua
+        def open_browser():
+            webbrowser.open(f'http://localhost:{PORT}/')
+        
+        threading.Timer(1.5, open_browser).start()
+
+        with socketserver.TCPServer(("", PORT), MaintenanceRequestHandler) as httpd:
+            httpd.serve_forever()
+
+    except Exception as e:
+        print("\n!!!!!!!!!!!!!! VIRHE !!!!!!!!!!!!!!")
+        print(f"Virhe käynnistyksessä: {e}")
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+        input("Paina Enter sulkeaksesi ikkunan...")
