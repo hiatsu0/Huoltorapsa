@@ -544,16 +544,16 @@
         }
         .config-json-preview {
             margin: 0;
-            max-height: 240px;
-            overflow: auto;
+            width: 100%;
+            min-height: 240px;
             font-family: monospace;
             font-size: 12px;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            background: #f7f7f7;
-            white-space: pre-wrap;
-            word-break: break-word;
+            background: #fff;
+            resize: vertical;
+            box-sizing: border-box;
         }
         .config-json-details {
             border: 1px solid #ddd;
@@ -615,7 +615,61 @@
             color: white; font-size: 30px;
             cursor: pointer; z-index: 1001;
         }
-
+        .auth-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(20, 22, 24, 0.45);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+        .auth-dialog {
+            width: 100%;
+            max-width: 360px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+            border: 1px solid #e5e5e5;
+            padding: 18px;
+        }
+        .auth-dialog h3 {
+            margin: 0 0 8px;
+            font-size: 18px;
+        }
+        .auth-dialog p {
+            margin: 0 0 12px;
+            color: #555;
+            font-size: 14px;
+        }
+        .auth-actions {
+            margin-top: 12px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .auth-actions button {
+            border: 1px solid #ccc;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        .auth-actions button.primary {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: #fff;
+        }
+        .auth-error {
+            margin-top: 8px;
+            color: #b02a37;
+            font-size: 13px;
+            min-height: 16px;
+        }
         /* Logo Preview */
         .logo-preview {
             height: 100px;
@@ -930,13 +984,28 @@
                 </div>
                 <hr style="border:0; border-top:1px solid #eee; margin: 20px 0;">
                 <div class="form-group">
-                    <label>Yrityksen tiedot (Oletusteksti)</label>
+                    <label>Yrityksen tiedot</label>
                     <textarea class="form-control" id="conf_company_text" rows="4"></textarea>
                 </div>
                 <div style="margin-top:15px">
                     <input type="checkbox" id="conf_hide_na">
                     <label for="conf_hide_na">Piilota "Ei sisälly" -kohdat tulosteesta oletuksena</label>
                 </div>
+            </div>
+        </div>
+
+        <div class="document-section">
+            <div class="document-section-header">Tietoturva</div>
+            <div class="document-section-content">
+                <div>
+                    <input type="checkbox" id="conf_use_password">
+                    <label for="conf_use_password">Käytä salasanaa kirjautumiseen</label>
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="conf_api_password" id="conf_password_label">Aseta salasana</label>
+                    <input type="password" class="form-control" id="conf_api_password" autocomplete="new-password" placeholder="Anna salasana">
+                </div>
+                <p class="config-help" style="margin-top: 12px;">Kun salasana on käytössä, sitä kysytään kaikilta uusilta laitteilta ennen sovellukseen pääsyä. Kirjautuminen muistetaan selaimen evästeellä. Asettaessa tai poistaessa salasanaa, muista tallentaa asetukset.</p>
             </div>
         </div>
 
@@ -950,9 +1019,26 @@
                     </div>
                     <div id="config-groups" class="config-groups"></div>
                     <details class="config-json-details">
-                        <summary>Näytä raaka JSON</summary>
-                        <pre id="config-json-preview" class="config-json-preview"></pre>
+                        <summary>Näytä / muokkaa raaka JSON</summary>
+                        <textarea id="config-json" class="config-json-preview" spellcheck="false"></textarea>
                     </details>
+                    <div style="margin-top: 14px;">
+                        <h4 style="margin: 0 0 10px;">Huoltokohteiden tilat</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="conf_status_done">Suoritettu-tila</label>
+                                <input type="text" class="form-control" id="conf_status_done">
+                            </div>
+                            <div class="form-group">
+                                <label for="conf_status_not_done">Ei tehty -tila</label>
+                                <input type="text" class="form-control" id="conf_status_not_done">
+                            </div>
+                            <div class="form-group">
+                                <label for="conf_status_na">Ei sisälly -tila</label>
+                                <input type="text" class="form-control" id="conf_status_na">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="nav-buttons" style="margin-top: 20px; text-align: right;">
                     <button type="button" onclick="saveConfig()"><i class="fas fa-save"></i> Tallenna</button>
@@ -970,6 +1056,18 @@
 <div id="image-modal" class="modal-overlay" onclick="closeImageModal()">
     <span class="modal-close">&times;</span>
     <img class="modal-content" id="modal-img-element">
+</div>
+
+<div id="auth-overlay" class="auth-overlay">
+    <div class="auth-dialog">
+        <h3>Salasana vaaditaan</h3>
+        <p>Sovellus on suojattu salasanalla. Anna salasana jatkaaksesi.</p>
+        <input type="password" id="auth-password-input" class="form-control" autocomplete="current-password" placeholder="Salasana">
+        <div id="auth-error" class="auth-error"></div>
+        <div class="auth-actions">
+            <button type="button" class="primary" onclick="submitAuthPassword()"><i class="fas fa-unlock"></i> Avaa</button>
+        </div>
+    </div>
 </div>
 
 <!-- PRINT VIEW -->
@@ -1041,17 +1139,17 @@
 <script>
     // State
     const MAINTENANCE_SCHEMA_VERSION = 2;
-    const REPORT_MISMATCH_TEXT_1 = 'Tässä raportissa on huoltotoimenpiteitä tai niiden ryhmiä, joita ei enää ole saatavilla asetuksissa määritellyissä toimenpiteissä.';
-    const REPORT_MISMATCH_TEXT_2 = 'Voit päivittää raportin toimenpiteet vastaamaan asetuksia, mutta joudut etsimään aiemmin merkityille huoltokohteille uudet vastineet.';
-    const statusTexts = {
+    const REPORT_MISMATCH_TEXT_1 = 'Tässä raportissa on huoltotoimenpiteitä tai ryhmiä, joita ei enää ole asetuksissa määritellyissä toimenpiteissä. Voit päivittää raportin toimenpiteet vastaamaan asetuksia, mutta joudut ehkä etsimään aiemmin merkityille huoltokohteille uudet vastineet.';
+    const DEFAULT_STATUS_TEXTS = {
         'done': 'Suoritettu',
         'not_done': 'Ei tehty',
         'na': 'Ei sisälly'
     };
+    const statusTexts = { ...DEFAULT_STATUS_TEXTS };
     const DEFAULT_ACCENT_COLOR = '#009eb8';
     const STATIC_LOGO_ID = 'company_logo';
 
-    let currentConfig = { maintenance_items: {}, shop_settings: {} };
+    let currentConfig = { maintenance_items: {}, shop_settings: {}, security: {} };
     let currentAttachments = [];
     let currentPage = 1;
     let itemsPerPage = 30;
@@ -1066,6 +1164,113 @@
     let isReportDirty = false;
     let reportDirtyTrackingPaused = false;
     let lastSavedReportSnapshot = '';
+    let pendingAuthPromise = null;
+    let authDialogResolver = null;
+
+    function showAuthDialog() {
+        const overlay = document.getElementById('auth-overlay');
+        const error = document.getElementById('auth-error');
+        const input = document.getElementById('auth-password-input');
+        if (!overlay || !input || !error) return;
+        error.textContent = '';
+        input.value = '';
+        overlay.style.display = 'flex';
+        setAuthDialogBusy(false);
+        setTimeout(() => input.focus(), 0);
+    }
+
+    function hideAuthDialog() {
+        const overlay = document.getElementById('auth-overlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+
+    function setAuthDialogBusy(isBusy) {
+        const input = document.getElementById('auth-password-input');
+        const button = document.querySelector('#auth-overlay button');
+        if (input) input.disabled = !!isBusy;
+        if (button) button.disabled = !!isBusy;
+    }
+
+    function resolveAuthDialog(success) {
+        if (typeof authDialogResolver === 'function') {
+            authDialogResolver(!!success);
+        }
+        authDialogResolver = null;
+        hideAuthDialog();
+    }
+
+    async function submitAuthPassword() {
+        const input = document.getElementById('auth-password-input');
+        const error = document.getElementById('auth-error');
+        if (!input || !error) return;
+        const password = input.value || '';
+        if (!password.trim()) {
+            error.textContent = 'Anna salasana.';
+            input.focus();
+            return;
+        }
+
+        setAuthDialogBusy(true);
+        error.textContent = '';
+
+        try {
+            const res = await fetch('api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            });
+            const data = await res.json();
+            if (res.ok && (data.status === 'ok' || data.status === 'not_required')) {
+                resolveAuthDialog(true);
+                return;
+            }
+            error.textContent = 'Salasana oli virheellinen.';
+            setAuthDialogBusy(false);
+            input.focus();
+            input.select();
+        } catch (e) {
+            error.textContent = 'Yhteysvirhe palvelimeen.';
+            setAuthDialogBusy(false);
+        }
+    }
+
+    function ensureApiAuth() {
+        if (pendingAuthPromise) return pendingAuthPromise;
+        pendingAuthPromise = new Promise(resolve => {
+            authDialogResolver = resolve;
+            showAuthDialog();
+        }).finally(() => {
+            pendingAuthPromise = null;
+        });
+        return pendingAuthPromise;
+    }
+
+    async function apiFetch(resource, options = {}, retryCount = 0) {
+        const res = await fetch(resource, options);
+        if (res.status !== 403) return res;
+
+        let payload = null;
+        try {
+            payload = await res.clone().json();
+        } catch (e) {
+            payload = null;
+        }
+        if (!payload || !payload.auth_required) return res;
+
+        const authOk = await ensureApiAuth();
+        if (!authOk || retryCount >= 1) return res;
+        return apiFetch(resource, options, retryCount + 1);
+    }
+
+    function updateSecurityPasswordInputState() {
+        const usePasswordCheckbox = document.getElementById('conf_use_password');
+        const passwordInput = document.getElementById('conf_api_password');
+        if (!usePasswordCheckbox || !passwordInput) return;
+        passwordInput.disabled = !usePasswordCheckbox.checked;
+        if (!usePasswordCheckbox.checked) {
+            passwordInput.value = '';
+        }
+    }
 
     function nextId(prefix) {
         const hasCryptoUuid = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function';
@@ -1079,6 +1284,28 @@
 
     function normalizeStatus(status) {
         return Object.prototype.hasOwnProperty.call(statusTexts, status) ? status : 'na';
+    }
+
+    function normalizeStatusLabelText(value, fallback) {
+        const normalized = (typeof value === 'string') ? value.trim() : '';
+        return normalized || fallback;
+    }
+
+    function normalizeStatusLabels(labels) {
+        const source = (labels && typeof labels === 'object') ? labels : {};
+        return {
+            done: normalizeStatusLabelText(source.done, DEFAULT_STATUS_TEXTS.done),
+            not_done: normalizeStatusLabelText(source.not_done, DEFAULT_STATUS_TEXTS.not_done),
+            na: normalizeStatusLabelText(source.na, DEFAULT_STATUS_TEXTS.na)
+        };
+    }
+
+    function applyStatusLabels(labels) {
+        const normalized = normalizeStatusLabels(labels);
+        statusTexts.done = normalized.done;
+        statusTexts.not_done = normalized.not_done;
+        statusTexts.na = normalized.na;
+        return normalized;
     }
 
     function normalizeAccentColor(color) {
@@ -1440,7 +1667,6 @@
         const text2 = document.getElementById('report-update-text-2');
         if (shouldShowReportUpdateBanner()) {
             text1.textContent = REPORT_MISMATCH_TEXT_1;
-            text2.textContent = REPORT_MISMATCH_TEXT_2;
             banner.style.display = 'block';
         } else {
             banner.style.display = 'none';
@@ -1452,6 +1678,19 @@
     // --- Initialization ---
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('report_date').valueAsDate = new Date();
+        const authInput = document.getElementById('auth-password-input');
+        const usePwCheckbox = document.getElementById('conf_use_password');
+        if (authInput) {
+            authInput.addEventListener('keydown', event => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    submitAuthPassword();
+                }
+            });
+        }
+        if (usePwCheckbox) {
+            usePwCheckbox.addEventListener('change', updateSecurityPasswordInputState);
+        }
         initReportDirtyTracking();
         loadConfig();
         loadReports();
@@ -1502,9 +1741,23 @@
         switchView('config-view');
         initConfigEditor(currentConfig.maintenance_items);
         const settings = currentConfig.shop_settings || {};
+        const security = currentConfig.security || {};
+        const statusLabels = normalizeStatusLabels(settings.status_labels);
         document.getElementById('conf_company_text').value = settings.company_text || '';
         document.getElementById('conf_hide_na').checked = !!settings.hide_na_in_print;
         document.getElementById('conf_accent_color').value = normalizeAccentColor(settings.accent_color);
+        document.getElementById('conf_status_done').value = statusLabels.done;
+        document.getElementById('conf_status_not_done').value = statusLabels.not_done;
+        document.getElementById('conf_status_na').value = statusLabels.na;
+        document.getElementById('conf_use_password').checked = !!security.password_enabled;
+        document.getElementById('conf_password_label').textContent = security.password_enabled
+            ? 'Vaihda salasana'
+            : 'Aseta salasana';
+        document.getElementById('conf_api_password').value = '';
+        document.getElementById('conf_api_password').placeholder = security.password_enabled
+            ? '********'
+            : 'Anna salasana';
+        updateSecurityPasswordInputState();
         
         const preview = document.getElementById('conf_logo_preview');
         const delBtn = document.getElementById('btn_delete_logo');
@@ -1554,7 +1807,7 @@
         if(ids.length === 0) return;
 
         if(confirm(`Haluatko varmasti poistaa ${ids.length} raporttia? Tämä poistaa myös raporttien liitteet pysyvästi.`)) {
-            const res = await fetch('api/delete_reports', {
+            const res = await apiFetch('api/delete_reports', {
                 method: 'POST',
                 body: JSON.stringify({ ids: ids })
             });
@@ -1570,19 +1823,25 @@
 
     // --- Data Loading ---
     async function loadConfig() {
-        const res = await fetch('api/config?t=' + new Date().getTime());
+        const res = await apiFetch('api/config?t=' + new Date().getTime());
         const data = await res.json();
         const normalizedMaintenance = normalizeMaintenanceConfig(data.maintenance_items || {});
         currentConfig.maintenance_items = normalizedMaintenance.value;
         const loadedSettings = data.shop_settings || {};
+        const loadedSecurity = (data.security && typeof data.security === 'object') ? data.security : {};
+        const normalizedStatusLabels = applyStatusLabels(loadedSettings.status_labels);
         currentConfig.shop_settings = {
             ...loadedSettings,
-            accent_color: normalizeAccentColor(loadedSettings.accent_color)
+            accent_color: normalizeAccentColor(loadedSettings.accent_color),
+            status_labels: normalizedStatusLabels
+        };
+        currentConfig.security = {
+            password_enabled: !!loadedSecurity.password_enabled
         };
         applyAccentColor(currentConfig.shop_settings.accent_color);
         if (normalizedMaintenance.changed) {
             try {
-                await fetch('api/save_config', {
+                await apiFetch('api/save_config', {
                     method: 'POST',
                     body: JSON.stringify({ maintenance_items: currentConfig.maintenance_items })
                 });
@@ -1613,7 +1872,7 @@
 
     async function loadReports() {
         const q = document.getElementById('search-input').value;
-        const res = await fetch(`api/reports?q=${encodeURIComponent(q)}&page=${currentPage}&limit=${itemsPerPage}&t=` + Date.now());
+        const res = await apiFetch(`api/reports?q=${encodeURIComponent(q)}&page=${currentPage}&limit=${itemsPerPage}&t=` + Date.now());
         const data = await res.json();
         
         // Handle response format (API now returns object)
@@ -1713,7 +1972,7 @@
     async function sendImageToServer(base64Data, mime, customId = null) {
         const payload = { image: base64Data, mime: mime };
         if(customId) payload.custom_id = customId;
-        const res = await fetch('api/upload_attachment', { method: 'POST', body: JSON.stringify(payload) });
+        const res = await apiFetch('api/upload_attachment', { method: 'POST', body: JSON.stringify(payload) });
         const data = await res.json();
         return data.uuid;
     }
@@ -1731,7 +1990,7 @@
                     // Immediate deletion logic
                     if(confirm("Haluatko poistaa kuvan pysyvästi? Tätä toimintoa ei voi peruuttaa.")) {
                         try {
-                            const res = await fetch('api/delete_attachment', {
+                            const res = await apiFetch('api/delete_attachment', {
                                 method: 'POST',
                                 body: JSON.stringify({ id: uuid })
                             });
@@ -1789,7 +2048,7 @@
     
     async function deleteLogo() {
         if(confirm("Poistetaanko logo?")) {
-            await fetch('api/delete_attachment', { method: 'POST', body: JSON.stringify({ id: STATIC_LOGO_ID }) });
+            await apiFetch('api/delete_attachment', { method: 'POST', body: JSON.stringify({ id: STATIC_LOGO_ID }) });
             document.getElementById('conf_logo_preview').style.display = 'none';
             document.getElementById('btn_delete_logo').style.display = 'none';
         }
@@ -1830,9 +2089,9 @@
     }
 
     function updateConfigJsonPreview() {
-        const preview = document.getElementById('config-json-preview');
+        const preview = document.getElementById('config-json');
         if (!preview) return;
-        preview.textContent = JSON.stringify(getMaintenanceItemsFromEditor(), null, 4);
+        preview.value = JSON.stringify(getMaintenanceItemsFromEditor(), null, 4);
     }
 
     function moveArrayElement(arr, fromIndex, toIndex) {
@@ -2031,24 +2290,33 @@
         return false;
     }
 
-    function getDuplicateConfigItemLabelsInSameGroup() {
+    function getDuplicateConfigItemLabelsInSameGroupFromMaintenance(maintenanceItems) {
+        const sourceGroups = (maintenanceItems && Array.isArray(maintenanceItems.groups))
+            ? maintenanceItems.groups
+            : [];
         const duplicates = [];
-        configEditorState.groups.forEach(group => {
+        sourceGroups.forEach(group => {
             const seen = new Set();
             const groupTitle = (group.title || '').trim() || 'Nimeton otsikko';
-            group.items.forEach(item => {
-                const normalized = normalizeConfigItemLabel(item.label);
+            const items = Array.isArray(group.items) ? group.items : [];
+            items.forEach(item => {
+                const label = (item && typeof item.label === 'string') ? item.label : '';
+                const normalized = normalizeConfigItemLabel(label);
                 if (!normalized) return;
                 if (seen.has(normalized)) {
                     duplicates.push({
                         groupTitle: groupTitle,
-                        label: (item.label || '').trim() || 'Nimeton'
+                        label: label.trim() || 'Nimeton'
                     });
                 }
                 seen.add(normalized);
             });
         });
         return duplicates;
+    }
+
+    function getDuplicateConfigItemLabelsInSameGroup() {
+        return getDuplicateConfigItemLabelsInSameGroupFromMaintenance(getMaintenanceItemsFromEditor());
     }
 
     function getUniqueConfigItemLabel(baseLabel, groupId) {
@@ -2381,9 +2649,9 @@
         }
 
         const optionsMeta = [
-            { value: 'done', icon: 'fa-check-circle', text: 'Suoritettu' },
-            { value: 'not_done', icon: 'fa-times-circle', text: 'Ei tehty' },
-            { value: 'na', icon: 'fa-minus-circle', text: 'Ei sisälly' }
+            { value: 'done', icon: 'fa-check-circle', text: statusTexts.done },
+            { value: 'not_done', icon: 'fa-times-circle', text: statusTexts.not_done },
+            { value: 'na', icon: 'fa-minus-circle', text: statusTexts.na }
         ];
 
         groups.forEach((group, groupIndex) => {
@@ -2458,7 +2726,7 @@
     async function lookupVehicle() {
         const plate = document.getElementById('license_plate').value;
         if (plate.length < 2) return;
-        const res = await fetch(`api/lookup_vehicle?plate=${encodeURIComponent(plate)}`);
+        const res = await apiFetch(`api/lookup_vehicle?plate=${encodeURIComponent(plate)}`);
         const data = await res.json();
         if (data.vin) {
             let changed = false;
@@ -2476,7 +2744,7 @@
     async function saveReport(silent = false) {
         const report = buildReportPayloadFromEditor();
 
-        const res = await fetch('api/save_report', { method: 'POST', body: JSON.stringify(report) });
+        const res = await apiFetch('api/save_report', { method: 'POST', body: JSON.stringify(report) });
         const result = await res.json();
         if (result.status === 'created' || result.status === 'updated') {
             document.getElementById('report-id').value = result.id;
@@ -2490,7 +2758,7 @@
     }
 
     async function openReport(id) {
-        const res = await fetch(`api/report?id=${id}`);
+        const res = await apiFetch(`api/report?id=${id}`);
         const data = await res.json();
         withDirtyTrackingPaused(() => {
             createNewReport({ skipUnsavedPrompt: true, skipBaseline: true });
@@ -2515,22 +2783,49 @@
     }
 	
     async function saveConfig() {
-        const duplicateLabels = getDuplicateConfigItemLabelsInSameGroup();
+        let maintenanceItems = null;
+        const configJsonInput = document.getElementById('config-json');
+        try {
+            const rawParsed = JSON.parse(configJsonInput.value);
+            maintenanceItems = normalizeMaintenanceConfig(rawParsed).value;
+        } catch (e) {
+            alert('Virheellinen JSON! Tarkista syntaksi.');
+            return;
+        }
+
+        const duplicateLabels = getDuplicateConfigItemLabelsInSameGroupFromMaintenance(maintenanceItems);
         if (duplicateLabels.length > 0) {
             const first = duplicateLabels[0];
             alert(`Sama kohdenimi löytyi saman otsikon alta (${first.groupTitle}: ${first.label}). Korjaa duplikaatit tästä otsikosta ennen tallennusta.`);
             return;
         }
-        const maintenanceItems = getMaintenanceItemsFromEditor();
+        const statusLabels = normalizeStatusLabels({
+            done: document.getElementById('conf_status_done').value,
+            not_done: document.getElementById('conf_status_not_done').value,
+            na: document.getElementById('conf_status_na').value
+        });
         const shopSettings = {
             company_text: document.getElementById('conf_company_text').value,
             hide_na_in_print: document.getElementById('conf_hide_na').checked,
-            accent_color: normalizeAccentColor(document.getElementById('conf_accent_color').value)
+            accent_color: normalizeAccentColor(document.getElementById('conf_accent_color').value),
+            status_labels: statusLabels
         };
+        const usePassword = document.getElementById('conf_use_password').checked;
+        const newPassword = document.getElementById('conf_api_password').value || '';
+        const security = { password: null };
+        if (!usePassword) {
+            security.password = '';
+        } else if (newPassword.trim()) {
+            security.password = newPassword;
+        } else if (!(currentConfig.security && currentConfig.security.password_enabled)) {
+            alert('Anna salasana, jotta suojaus voidaan ottaa käyttöön.');
+            return;
+        }
         applyAccentColor(shopSettings.accent_color);
-        await fetch('api/save_config', {
+        applyStatusLabels(shopSettings.status_labels);
+        await apiFetch('api/save_config', {
             method: 'POST',
-            body: JSON.stringify({ maintenance_items: maintenanceItems, shop_settings: shopSettings })
+            body: JSON.stringify({ maintenance_items: maintenanceItems, shop_settings: shopSettings, security: security })
         });
         alert('Asetukset tallennettu!');
         window.location.reload();
