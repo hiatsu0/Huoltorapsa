@@ -14,8 +14,10 @@ Kevyt ja helppokäyttöinen työkalu ajoneuvojen huoltoraporttien luomiseen, hal
 - Liitteet: Liitä raporttiin kuvia (esim. vauriokohdista tai vaihdetuista osista).
 - Älykäs haku: Hakee ajoneuvon tiedot (VIN, malli) automaattisesti rekisterinumeron perusteella aiemmista raporteista.
 - Mukautettavuus:
-    - Muokkaa huoltokohtien listaa (esim. jarrut, nesteet) suoraan asetuksista.
+    - Muokkaa huoltokohtien listaa (esim. jarrut, nesteet) suoraan asetuksista, ja lisää tarkempia lisätietoja. Raportti tunnistaa muutokset ja tarjoaa "Päivitä"-toiminnon. Poistuneille kohteille voi etsiä vastineet raportilla.
     - Lisää yrityksen logo ja yhteystiedot tulosteisiin.
+    - Huoltosetit: Luo huoltosettejä ja käytä niitä raportilla yhdellä painalluksella.
+
 - Arkisto: Selaa vanhoja raportteja hakusanoilla (rek.nro, asiakas, pvm).
 
 ## 🚀 Käyttöönotto
@@ -24,7 +26,7 @@ Sovellus on kevyt eikä vaadi asennuksia. Tarvitset vain Python 3:n.
 
 **Windows-käyttäjät (Helppo tapa):**
 
-Voit käyttää mukana tulevaa run.cmd-tiedostoa.
+Voit käyttää mukana tulevaa run.cmd-tiedostoa (Ei toimi **Windows S Mode**, käytä manuaalista tapaa).
 
 1. Tuplaklikkaa run.cmd.
 2. Skripti tarkistaa onko Python asennettu ja asentaa sen tarvittaessa automaattisesti.
@@ -45,7 +47,12 @@ Sovelluksen Asetukset-näkymässä voit:
 
 1. Ladata yrityksen logon.
 2. Kirjoittaa yrityksen tiedot, jotka tulostuvat raportin yläosaan.
-3. Muokata tarkistuslistan kohtia JSON-editorilla.
+3. Muokata huoltotehtäviä visuaalisella editorilla (tai suoraan JSON-dataa muokaten).
+4. Luoda ja hallita huoltosettejä.
+5. Muuttaa statustekstit (Suoritettu / Ei tehty / Ei sisälly)
+6. Valita korostusvärin.
+7. Ottaa salasanasuojauksen käyttöön (salasanan nollaus tarvittaessa: <code>python3 resetpw.py</code>).
+
 
 ## 🛠️ Tekninen toteutus
 
