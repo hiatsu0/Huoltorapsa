@@ -422,6 +422,12 @@
             border-color: #9ec5fe;
             cursor: default;
         }
+        .legacy-help-text {
+            margin: 0 0 10px 0;
+            line-height: 1.35;
+            font-size: 14px;
+            color: #664d03;
+        }
         .report-update-banner {
             border: 1px solid #ffe69c;
             background: #fff8e1;
@@ -490,6 +496,30 @@
 
         .status-option[data-value="na"].selected { background-color: var(--neutral-bg); font-weight: bold; }
         .status-option[data-value="na"].selected i { color: var(--neutral-color); }
+
+        .maintenance-set-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .maintenance-set-chip {
+            border: 1px solid #d4dadd;
+            background: #fff;
+            color: #34444d;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .maintenance-set-chip:hover {
+            background: #f3f5f6;
+        }
+        .maintenance-set-chip:disabled {
+            cursor: default;
+            color: #8b9499;
+            border-color: #e0e4e7;
+            background: #f8f9fa;
+        }
 
         /* Config Editor */
         .config-help {
@@ -666,6 +696,130 @@
         }
         .config-json-details[open] summary {
             margin-bottom: 8px;
+        }
+        .maintenance-set-create-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .maintenance-set-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .maintenance-set-card {
+            border: 1px solid #dcdfe3;
+            border-radius: 6px;
+            background: #fafbfc;
+            padding: 10px;
+        }
+        .maintenance-set-summary {
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 8px;
+            align-items: center;
+            user-select: none;
+            font-weight: 600;
+            list-style: none;
+        }
+        .maintenance-set-summary::marker {
+            content: '';
+        }
+        .maintenance-set-summary::-webkit-details-marker {
+            display: none;
+        }
+        .maintenance-set-summary-caret {
+            color: #66737b;
+            font-size: 12px;
+            width: 12px;
+            text-align: center;
+        }
+        .maintenance-set-summary-meta {
+            font-size: 12px;
+            color: #6b7378;
+            font-weight: normal;
+            text-align: right;
+        }
+        .maintenance-set-body {
+            margin-top: 10px;
+        }
+        .maintenance-set-header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .maintenance-set-entry-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .maintenance-set-entry {
+            border: 1px solid #e5e8eb;
+            border-radius: 5px;
+            background: #fff;
+            padding: 8px;
+        }
+        .maintenance-set-entry-main {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 8px;
+            align-items: center;
+        }
+        .maintenance-set-entry-status {
+            min-width: 125px;
+            border: 1px solid #d4d4d4;
+            border-radius: 4px;
+            padding: 6px 8px;
+            background: #fff;
+        }
+        .maintenance-set-entry-subitems {
+            margin-top: 7px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .maintenance-set-entry-subitem {
+            border: 1px solid #d6dbe0;
+            background: #fff;
+            color: #3f4950;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 12px;
+            line-height: 1.25;
+            cursor: pointer;
+        }
+        .maintenance-set-entry-subitem:hover {
+            background: #f1f3f5;
+            border-color: #c6ccd2;
+        }
+        .maintenance-set-entry-subitem.selected {
+            border-color: var(--primary-color);
+            background: #e8f6fa;
+            color: #0f5e6e;
+        }
+        .maintenance-set-entry-meta {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #666;
+        }
+        .maintenance-set-warnings {
+            border: 1px solid #ffe08a;
+            background: #fff8df;
+            color: #735110;
+            border-radius: 5px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            line-height: 1.35;
+        }
+        .maintenance-set-actions {
+            margin-top: 8px;
+            display: flex;
+            justify-content: flex-end;
         }
 
         /* Attachments */
@@ -1011,12 +1165,21 @@
 
             <!-- Dynamic Maintenance Items -->
             <div id="report-update-banner" class="report-update-banner" style="display:none;">
-                <p id="report-update-text-1"></p>
-                <p id="report-update-text-2"></p>
+                <p>Asetuksissa määritellyt huoltotoimenpiteet ovat päivittyneet tämän raportin tallennuksen jälkeen. Voit halutessasi päivittää raportin vastaamaan nykyasetuksia, jolloin jotkin kohdat muuttuvat tai poistuvat. Poistuneille kohteille on mahdollista etsiä uudet vastineet.</p>
                 <div class="report-update-actions">
                     <button type="button" onclick="updateReportTemplateToCurrentSettings()">Päivitä</button>
                 </div>
             </div>
+			
+			<!-- Maintenance sets -->
+            <div id="maintenance-sets-section" class="document-section" style="display:none;">
+                <div class="document-section-header">Huoltosetit</div>
+                <div class="document-section-content">
+                    <div id="maintenance-sets-container" class="maintenance-set-chips"></div>
+                </div>
+            </div>
+			
+			<!-- Maintenance titles and items -->
             <div id="maintenance-sections-container"></div>
 
             <!-- Additional Work -->
@@ -1102,14 +1265,14 @@
                     <label for="conf_api_password" id="conf_password_label">Aseta salasana</label>
                     <input type="password" class="form-control" id="conf_api_password" autocomplete="new-password" placeholder="Anna salasana">
                 </div>
-                <p class="config-help" style="margin-top: 12px;">Kun salasana on käytössä, sitä kysytään kaikilta uusilta laitteilta ennen sovellukseen pääsyä. Kirjautuminen muistetaan selaimen evästeellä. Asettaessa tai poistaessa salasanaa, muista tallentaa asetukset.</p>
+                <p class="config-help" style="margin-top: 12px;">Kun salasana on käytössä, sitä kysytään kaikilta uusilta laitteilta ennen sovellukseen pääsyä. Kirjautuminen muistetaan selaimen evästeellä. Asettaessa tai poistaessa salasanaa, muista tallentaa asetukset. Unohtuneen salasanan voi nollata palvelimen kansiossa: <kbd>python3 resetpw.py</kbd></p>
             </div>
         </div>
 
         <div class="document-section">
             <div class="document-section-header">Muokkaa huoltokohteita</div>
             <div class="document-section-content">
-                <p class="config-help">Voit lisätä, nimetä uudelleen ja poistaa otsikoita ja kohteita. Uudessa tallennusmallissa raportin alkuperäinen rakenne säilytetään raportissa, joten vanhat raportit pysyvät tulostettavina myös asetusten muutosten jälkeen. Jos päivität vanhan raportin nykyisiin asetuksiin, poistetut kohteet näkyvät "Poistuneet huoltotoimenpiteet" -listassa kunnes etsit niille vastineen tai poistat ne raportilta.</p>
+                <p class="config-help">Voit lisätä, nimetä uudelleen, järjestellä ja poistaa otsikoita tai kohteita. Tallennettujen raporttien alkuperäinen rakenne säilyy raportissa, joten vanhat raportit pysyvät tulostettavina myös asetusten muutosten jälkeen. Muuttuneet asetukset on päivitettäissä aiemmin tallennettuihin raportteihin, jolloin nimitykset ja järjestys päivittyvät. Kohteet jotka olivat raportilla aiemmin, mutta joita ei enää ole asetuksissa löytyvät "Poistuneet huoltotoimenpiteet" -listasta kunnes etsit niille vastineen tai poistat ne raportilta.</p>
                 <div class="config-editor">
                     <div class="config-actions">
                         <button type="button" class="cfg-btn" onclick="addConfigGroup()"><i class="fas fa-plus"></i> Lisää otsikko</button>
@@ -1137,10 +1300,23 @@
                         </div>
                     </div>
                 </div>
-                <div class="nav-buttons" style="margin-top: 20px; text-align: right;">
-                    <button type="button" onclick="saveConfig()"><i class="fas fa-save"></i> Tallenna</button>
-                </div>
             </div>
+        </div>
+
+        <div class="document-section">
+            <div class="document-section-header">Huoltosettien luonti</div>
+            <div class="document-section-content">
+                <p class="config-help">Luo huoltosettejä valitsemalla huoltokohteet, niille tilat ja alakohtia. Raportissa voit ottaa setin käyttöön yhdellä napautuksella.</p>
+                <div class="maintenance-set-create-row">
+                    <input type="text" class="form-control" id="new-maintenance-set-name" placeholder="Huoltosetin nimi">
+                    <button type="button" class="cfg-btn" onclick="addMaintenanceSetFromInput()"><i class="fas fa-plus"></i> Luo huoltosetti</button>
+                </div>
+                <div id="maintenance-set-editor" class="maintenance-set-list"></div>
+            </div>
+        </div>
+
+        <div class="nav-buttons" style="margin-top: 20px; text-align: right;">
+            <button type="button" onclick="saveConfig()"><i class="fas fa-save"></i> Tallenna</button>
         </div>
     </div>
 
@@ -1236,7 +1412,7 @@
 <script>
     // State
     const MAINTENANCE_SCHEMA_VERSION = 2;
-    const REPORT_MISMATCH_TEXT_1 = 'Tässä raportissa on huoltotoimenpiteitä tai ryhmiä, joita ei enää ole asetuksissa määritellyissä toimenpiteissä. Voit päivittää raportin toimenpiteet vastaamaan asetuksia, mutta joudut ehkä etsimään aiemmin merkityille huoltokohteille uudet vastineet.';
+    const LEGACY_REPLACEMENT_HELP_TEXT = 'Voit valita raportin alkuperäisestä versiosta poistuneille kohteille uudet vastineet alla:';
     const DEFAULT_STATUS_TEXTS = {
         'done': 'Suoritettu',
         'not_done': 'Ei tehty',
@@ -1246,7 +1422,7 @@
     const DEFAULT_ACCENT_COLOR = '#009eb8';
     const STATIC_LOGO_ID = 'company_logo';
 
-    let currentConfig = { maintenance_items: {}, shop_settings: {}, security: {} };
+    let currentConfig = { maintenance_items: {}, maintenance_sets: {}, shop_settings: {}, security: {} };
     let currentAttachments = [];
     let currentPage = 1;
     let itemsPerPage = 30;
@@ -1254,6 +1430,8 @@
     let isSelectionMode = false;
     let searchTimeout = null;
     let configEditorState = { groups: [] };
+    let maintenanceSetEditorState = { sets: [] };
+    let maintenanceSetExpandedIds = new Set();
     let configDragState = null;
     let currentReportMaintenance = { schema_version: MAINTENANCE_SCHEMA_VERSION, groups: [], legacy_items: [] };
     let currentReportHasSettingsMismatch = false;
@@ -1418,6 +1596,7 @@
 
     function nextConfigGroupId() { return nextId('group'); }
     function nextConfigItemId() { return nextId('item'); }
+    function nextMaintenanceSetId() { return nextId('set'); }
     function nextLegacyItemId() { return nextId('legacy'); }
 
     function normalizeStatus(status) {
@@ -1616,6 +1795,97 @@
         return `${baseLabel}${suffix}${extrasText}`;
     }
 
+    function buildMaintenanceItemLookup(maintenanceItems) {
+        const source = (maintenanceItems && typeof maintenanceItems === 'object') ? maintenanceItems : {};
+        const groups = Array.isArray(source.groups) ? source.groups : [];
+        const byId = new Map();
+        const ordered = [];
+        groups.forEach(group => {
+            const groupTitle = (group && typeof group.title === 'string') ? group.title.trim() : '';
+            (Array.isArray(group && group.items) ? group.items : []).forEach(item => {
+                const itemId = (item && typeof item.id === 'string') ? item.id.trim() : '';
+                if (!itemId || byId.has(itemId)) return;
+                const label = (item && typeof item.label === 'string') ? item.label.trim() : '';
+                const entry = {
+                    id: itemId,
+                    label: label,
+                    group_title: groupTitle,
+                    subitems: normalizeSubitems(item && item.subitems)
+                };
+                byId.set(itemId, entry);
+                ordered.push(entry);
+            });
+        });
+        return { byId: byId, ordered: ordered };
+    }
+
+    function normalizeMaintenanceSets(rawSets, maintenanceItems) {
+        const source = (rawSets && typeof rawSets === 'object') ? rawSets : {};
+        const sourceSets = Array.isArray(rawSets)
+            ? rawSets
+            : (Array.isArray(source.sets) ? source.sets : []);
+        const normalized = { sets: [] };
+        const itemLookup = buildMaintenanceItemLookup(maintenanceItems || currentConfig.maintenance_items || {}).byId;
+        const seenSetIds = new Set();
+        let changed = Array.isArray(rawSets) || !Array.isArray(source.sets);
+
+        sourceSets.forEach(rawSet => {
+            if (!rawSet || typeof rawSet !== 'object') {
+                changed = true;
+                return;
+            }
+            let setId = (typeof rawSet.id === 'string') ? rawSet.id.trim() : '';
+            if (!setId || seenSetIds.has(setId)) {
+                setId = nextMaintenanceSetId();
+                changed = true;
+            }
+            seenSetIds.add(setId);
+            const name = (typeof rawSet.name === 'string') ? rawSet.name.trim() : '';
+            if (typeof rawSet.name !== 'string') changed = true;
+
+            const rawEntries = Array.isArray(rawSet.entries) ? rawSet.entries : [];
+            if (!Array.isArray(rawSet.entries)) changed = true;
+            const entries = [];
+            const seenItemIds = new Set();
+            rawEntries.forEach(rawEntry => {
+                if (!rawEntry || typeof rawEntry !== 'object') {
+                    changed = true;
+                    return;
+                }
+                const itemId = (typeof rawEntry.item_id === 'string') ? rawEntry.item_id.trim() : '';
+                if (!itemId || seenItemIds.has(itemId)) {
+                    changed = true;
+                    return;
+                }
+                seenItemIds.add(itemId);
+                const status = normalizeStatus(rawEntry.status);
+                if (status !== rawEntry.status) changed = true;
+                const itemRef = itemLookup.get(itemId);
+                let itemLabel = (typeof rawEntry.item_label === 'string') ? rawEntry.item_label.trim() : '';
+                if (!itemLabel && itemRef && itemRef.label) {
+                    itemLabel = itemRef.label;
+                    if (typeof rawEntry.item_label !== 'string') changed = true;
+                }
+                const selectedSubitems = normalizeSubitems(rawEntry.selected_subitems);
+                const normalizedSelectedSubitems = itemRef
+                    ? normalizeSelectedSubitems(selectedSubitems, itemRef.subitems)
+                    : selectedSubitems;
+                if (normalizedSelectedSubitems.length !== selectedSubitems.length) changed = true;
+
+                entries.push({
+                    item_id: itemId,
+                    item_label: itemLabel,
+                    status: status,
+                    selected_subitems: normalizedSelectedSubitems
+                });
+            });
+
+            normalized.sets.push({ id: setId, name: name, entries: entries });
+        });
+
+        return { value: normalized, changed: changed };
+    }
+
     function normalizeMaintenanceConfig(maintenanceItems) {
         const source = (maintenanceItems && typeof maintenanceItems === 'object') ? maintenanceItems : {};
         const groups = Array.isArray(source.groups) ? source.groups : [];
@@ -1723,7 +1993,8 @@
             title: group.title || '',
             items: (Array.isArray(group.items) ? group.items : []).map(item => ({
                 id: item.id || '',
-                label: item.label || ''
+                label: item.label || '',
+                subitems: normalizeSubitems(item && item.subitems)
             }))
         }));
     }
@@ -1955,15 +2226,10 @@
     function updateReportUpdateBanner() {
         const banner = document.getElementById('report-update-banner');
         if (!banner) return;
-        const text1 = document.getElementById('report-update-text-1');
-        const text2 = document.getElementById('report-update-text-2');
         if (shouldShowReportUpdateBanner()) {
-            text1.textContent = REPORT_MISMATCH_TEXT_1;
             banner.style.display = 'block';
         } else {
             banner.style.display = 'none';
-            text1.textContent = '';
-            text2.textContent = '';
         }
     }
     
@@ -2033,6 +2299,7 @@
         if (!confirmDiscardUnsavedReportChanges('Asetukset')) return;
         switchView('config-view');
         initConfigEditor(currentConfig.maintenance_items);
+        initMaintenanceSetEditor(currentConfig.maintenance_sets);
         const settings = currentConfig.shop_settings || {};
         const security = currentConfig.security || {};
         const statusLabels = normalizeStatusLabels(settings.status_labels);
@@ -2057,6 +2324,8 @@
         preview.src = `api/attachment?id=${STATIC_LOGO_ID}&t=${Date.now()}`;
         preview.onload = function() { preview.style.display = 'block'; delBtn.style.display = 'inline-block'; };
         preview.onerror = function() { preview.style.display = 'none'; delBtn.style.display = 'none'; };
+        const newSetInput = document.getElementById('new-maintenance-set-name');
+        if (newSetInput) newSetInput.value = '';
     }
 
     // --- Selection Mode Logic ---
@@ -2120,6 +2389,8 @@
         const data = await res.json();
         const normalizedMaintenance = normalizeMaintenanceConfig(data.maintenance_items || {});
         currentConfig.maintenance_items = normalizedMaintenance.value;
+        const normalizedMaintenanceSets = normalizeMaintenanceSets(data.maintenance_sets || {}, currentConfig.maintenance_items);
+        currentConfig.maintenance_sets = normalizedMaintenanceSets.value;
         const loadedSettings = data.shop_settings || {};
         const loadedSecurity = (data.security && typeof data.security === 'object') ? data.security : {};
         const normalizedStatusLabels = applyStatusLabels(loadedSettings.status_labels);
@@ -2132,11 +2403,14 @@
             password_enabled: !!loadedSecurity.password_enabled
         };
         applyAccentColor(currentConfig.shop_settings.accent_color);
-        if (normalizedMaintenance.changed) {
+        if (normalizedMaintenance.changed || normalizedMaintenanceSets.changed) {
             try {
                 await apiFetch('api/save_config', {
                     method: 'POST',
-                    body: JSON.stringify({ maintenance_items: currentConfig.maintenance_items })
+                    body: JSON.stringify({
+                        maintenance_items: currentConfig.maintenance_items,
+                        maintenance_sets: currentConfig.maintenance_sets
+                    })
                 });
             } catch (e) {
                 console.warn('Maintenance config schema migration save failed', e);
@@ -2144,6 +2418,7 @@
         }
         initializeNewReportMaintenance();
         renderMaintenanceSections();
+        renderMaintenanceSetSection();
     }
 
     function handleSearch() {
@@ -2822,6 +3097,388 @@
         });
 
         updateConfigJsonPreview();
+        renderMaintenanceSetEditor();
+    }
+
+    function getMaintenanceSetsFromEditor(maintenanceItems) {
+        const normalized = normalizeMaintenanceSets({ sets: maintenanceSetEditorState.sets }, maintenanceItems || getMaintenanceItemsFromEditor());
+        const sets = normalized.value.sets
+            .map(set => ({
+                id: set.id,
+                name: set.name.trim(),
+                entries: (Array.isArray(set.entries) ? set.entries : [])
+                    .map(entry => ({
+                        item_id: entry.item_id,
+                        item_label: (entry.item_label || '').trim(),
+                        status: normalizeStatus(entry.status),
+                        selected_subitems: normalizeSubitems(entry.selected_subitems)
+                    }))
+                    .filter(entry => !!entry.item_id)
+            }))
+            .filter(set => set.name.length > 0 && set.entries.length > 0);
+        return { sets: sets };
+    }
+
+    function initMaintenanceSetEditor(rawSets) {
+        const normalized = normalizeMaintenanceSets(rawSets, getMaintenanceItemsFromEditor());
+        maintenanceSetExpandedIds = new Set();
+        maintenanceSetEditorState = {
+            sets: normalized.value.sets.map(set => ({
+                id: set.id,
+                name: set.name,
+                entries: (set.entries || []).map(entry => ({
+                    item_id: entry.item_id,
+                    item_label: entry.item_label || '',
+                    status: normalizeStatus(entry.status),
+                    selected_subitems: normalizeSubitems(entry.selected_subitems)
+                }))
+            }))
+        };
+        renderMaintenanceSetEditor();
+    }
+
+    function findMaintenanceSetById(setId) {
+        return maintenanceSetEditorState.sets.find(set => set.id === setId) || null;
+    }
+
+    function addMaintenanceSetFromInput() {
+        const input = document.getElementById('new-maintenance-set-name');
+        if (!input) return;
+        const name = (input.value || '').trim();
+        if (!name) {
+            alert('Anna huoltosetille nimi.');
+            input.focus();
+            return;
+        }
+        maintenanceSetEditorState.sets.push({ id: nextMaintenanceSetId(), name: name, entries: [] });
+        input.value = '';
+        renderMaintenanceSetEditor();
+    }
+
+    function removeMaintenanceSet(setId) {
+        const set = findMaintenanceSetById(setId);
+        if (!set) return;
+        if (!confirm(`Poistetaanko huoltosetti "${set.name || 'Nimeton'}"?`)) return;
+        maintenanceSetEditorState.sets = maintenanceSetEditorState.sets.filter(entry => entry.id !== setId);
+        maintenanceSetExpandedIds.delete(setId);
+        renderMaintenanceSetEditor();
+    }
+
+    function addMaintenanceSetEntry(setId) {
+        const set = findMaintenanceSetById(setId);
+        if (!set) return;
+        const lookup = buildMaintenanceItemLookup(getMaintenanceItemsFromEditor());
+        const firstAvailable = lookup.ordered.find(item => !set.entries.some(entry => entry.item_id === item.id));
+        if (!firstAvailable) {
+            alert('Huoltosettiin ei ole lisättävissä uusia kohteita.');
+            return;
+        }
+        set.entries.push({
+            item_id: firstAvailable.id,
+            item_label: firstAvailable.label,
+            status: 'done',
+            selected_subitems: []
+        });
+        renderMaintenanceSetEditor();
+    }
+
+    function removeMaintenanceSetEntry(setId, itemId) {
+        const set = findMaintenanceSetById(setId);
+        if (!set) return;
+        set.entries = set.entries.filter(entry => entry.item_id !== itemId);
+        renderMaintenanceSetEditor();
+    }
+
+    function getMaintenanceSetIssues(set, maintenanceItems) {
+        const lookup = buildMaintenanceItemLookup(maintenanceItems).byId;
+        const missingItems = [];
+        const missingSubitems = [];
+        (set.entries || []).forEach(entry => {
+            const itemRef = lookup.get(entry.item_id);
+            if (!itemRef) {
+                missingItems.push((entry.item_label || entry.item_id || 'Tuntematon kohde').trim());
+                return;
+            }
+            const selected = normalizeSubitems(entry.selected_subitems);
+            const valid = new Set(normalizeSelectedSubitems(selected, itemRef.subitems));
+            const missing = selected.filter(subitem => !valid.has(subitem));
+            if (missing.length > 0) {
+                const label = itemRef.label || entry.item_label || entry.item_id;
+                missingSubitems.push(`${label}: ${missing.join(', ')}`);
+            }
+        });
+        return { missing_items: missingItems, missing_subitems: missingSubitems };
+    }
+
+    function renderMaintenanceSetEditor() {
+        const container = document.getElementById('maintenance-set-editor');
+        if (!container) return;
+        const maintenanceItems = getMaintenanceItemsFromEditor();
+        const lookup = buildMaintenanceItemLookup(maintenanceItems);
+        const normalized = normalizeMaintenanceSets({ sets: maintenanceSetEditorState.sets }, maintenanceItems);
+        maintenanceSetEditorState.sets = normalized.value.sets;
+        container.innerHTML = '';
+        const existingSetIds = new Set(maintenanceSetEditorState.sets.map(set => set.id));
+        maintenanceSetExpandedIds.forEach(setId => {
+            if (!existingSetIds.has(setId)) maintenanceSetExpandedIds.delete(setId);
+        });
+
+        maintenanceSetEditorState.sets.forEach(set => {
+            const issues = getMaintenanceSetIssues(set, maintenanceItems);
+            const missingRefCount = issues.missing_items.length + issues.missing_subitems.length;
+
+            const card = document.createElement('details');
+            card.className = 'maintenance-set-card';
+            card.open = maintenanceSetExpandedIds.has(set.id);
+
+            const summary = document.createElement('summary');
+            summary.className = 'maintenance-set-summary';
+
+            const summaryCaret = document.createElement('span');
+            summaryCaret.className = 'maintenance-set-summary-caret';
+            summaryCaret.textContent = card.open ? '▼' : '▶';
+
+            const summaryName = document.createElement('span');
+            summaryName.textContent = (set.name || 'Nimeton huoltosetti');
+
+            const summaryMeta = document.createElement('span');
+            summaryMeta.className = 'maintenance-set-summary-meta';
+            summaryMeta.textContent = missingRefCount > 0
+                ? `${set.entries.length} kohdetta • ${missingRefCount} puuttuvaa viittausta`
+                : `${set.entries.length} kohdetta`;
+
+            summary.appendChild(summaryCaret);
+            summary.appendChild(summaryName);
+            summary.appendChild(summaryMeta);
+            card.appendChild(summary);
+
+            card.addEventListener('toggle', () => {
+                if (card.open) maintenanceSetExpandedIds.add(set.id);
+                else maintenanceSetExpandedIds.delete(set.id);
+                summaryCaret.textContent = card.open ? '▼' : '▶';
+            });
+
+            const body = document.createElement('div');
+            body.className = 'maintenance-set-body';
+
+            const header = document.createElement('div');
+            header.className = 'maintenance-set-header';
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.className = 'form-control';
+            nameInput.value = set.name || '';
+            nameInput.placeholder = 'Huoltosetin nimi';
+            nameInput.addEventListener('input', () => {
+                set.name = nameInput.value;
+                summaryName.textContent = (set.name || 'Nimeton huoltosetti');
+            });
+
+            const removeSetBtn = document.createElement('button');
+            removeSetBtn.type = 'button';
+            removeSetBtn.className = 'cfg-btn cfg-btn-danger';
+            removeSetBtn.textContent = 'Poista setti';
+            removeSetBtn.addEventListener('click', () => removeMaintenanceSet(set.id));
+
+            header.appendChild(nameInput);
+            header.appendChild(removeSetBtn);
+            body.appendChild(header);
+
+            if (issues.missing_items.length > 0 || issues.missing_subitems.length > 0) {
+                const warning = document.createElement('div');
+                warning.className = 'maintenance-set-warnings';
+                const parts = [];
+                if (issues.missing_items.length > 0) parts.push(`Puuttuvat kohteet: ${issues.missing_items.join(', ')}`);
+                if (issues.missing_subitems.length > 0) parts.push(`Puuttuvat alakohdat: ${issues.missing_subitems.join(', ')}`);
+                warning.textContent = parts.join(' | ');
+                body.appendChild(warning);
+            }
+
+            const entryList = document.createElement('div');
+            entryList.className = 'maintenance-set-entry-list';
+
+            set.entries.forEach(entry => {
+                const entryRow = document.createElement('div');
+                entryRow.className = 'maintenance-set-entry';
+
+                const entryMain = document.createElement('div');
+                entryMain.className = 'maintenance-set-entry-main';
+
+                const itemSelect = document.createElement('select');
+                itemSelect.className = 'form-control';
+                if (entry.item_id && !lookup.byId.has(entry.item_id)) {
+                    const missingOption = document.createElement('option');
+                    missingOption.value = entry.item_id;
+                    missingOption.textContent = `[PUUTTUU] ${entry.item_label || entry.item_id}`;
+                    itemSelect.appendChild(missingOption);
+                }
+                lookup.ordered.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = `${item.group_title || 'Nimeton otsikko'} / ${item.label}`;
+                    itemSelect.appendChild(option);
+                });
+                itemSelect.value = entry.item_id;
+                itemSelect.addEventListener('change', () => {
+                    const nextItemId = itemSelect.value;
+                    if (set.entries.some(other => other !== entry && other.item_id === nextItemId)) {
+                        alert('Sama kohde on jo tässä huoltosetissä.');
+                        itemSelect.value = entry.item_id;
+                        return;
+                    }
+                    const itemRef = lookup.byId.get(nextItemId);
+                    entry.item_id = nextItemId;
+                    entry.item_label = itemRef ? itemRef.label : '';
+                    entry.selected_subitems = normalizeSelectedSubitems(entry.selected_subitems, itemRef ? itemRef.subitems : []);
+                    renderMaintenanceSetEditor();
+                });
+
+                const statusSelect = document.createElement('select');
+                statusSelect.className = 'maintenance-set-entry-status';
+                ['done', 'not_done', 'na'].forEach(statusValue => {
+                    const option = document.createElement('option');
+                    option.value = statusValue;
+                    option.textContent = statusTexts[statusValue];
+                    statusSelect.appendChild(option);
+                });
+                statusSelect.value = normalizeStatus(entry.status);
+                statusSelect.addEventListener('change', () => {
+                    entry.status = normalizeStatus(statusSelect.value);
+                });
+
+                const removeEntryBtn = document.createElement('button');
+                removeEntryBtn.type = 'button';
+                removeEntryBtn.className = 'cfg-btn cfg-btn-danger';
+                removeEntryBtn.textContent = 'Poista';
+                removeEntryBtn.addEventListener('click', () => removeMaintenanceSetEntry(set.id, entry.item_id));
+
+                entryMain.appendChild(itemSelect);
+                entryMain.appendChild(statusSelect);
+                entryMain.appendChild(removeEntryBtn);
+                entryRow.appendChild(entryMain);
+
+                const itemRef = lookup.byId.get(entry.item_id);
+                if (itemRef && itemRef.subitems.length > 0) {
+                    const subitemsRow = document.createElement('div');
+                    subitemsRow.className = 'maintenance-set-entry-subitems';
+                    const selectedSet = new Set(normalizeSelectedSubitems(entry.selected_subitems, itemRef.subitems));
+                    itemRef.subitems.forEach(subitem => {
+                        const chip = document.createElement('button');
+                        chip.type = 'button';
+                        chip.className = `maintenance-set-entry-subitem${selectedSet.has(subitem) ? ' selected' : ''}`;
+                        chip.textContent = subitem;
+                        chip.addEventListener('click', () => {
+                            const next = new Set(normalizeSubitems(entry.selected_subitems));
+                            if (next.has(subitem)) next.delete(subitem);
+                            else next.add(subitem);
+                            entry.selected_subitems = Array.from(next);
+                            renderMaintenanceSetEditor();
+                        });
+                        subitemsRow.appendChild(chip);
+                    });
+                    entryRow.appendChild(subitemsRow);
+                } else {
+                    const meta = document.createElement('div');
+                    meta.className = 'maintenance-set-entry-meta';
+                    meta.textContent = 'Ei valittavia alakohtia.';
+                    entryRow.appendChild(meta);
+                }
+
+                entryList.appendChild(entryRow);
+            });
+            body.appendChild(entryList);
+
+            const actions = document.createElement('div');
+            actions.className = 'maintenance-set-actions';
+            const addEntryBtn = document.createElement('button');
+            addEntryBtn.type = 'button';
+            addEntryBtn.className = 'cfg-btn';
+            addEntryBtn.textContent = ' + Lisää kohde';
+            addEntryBtn.addEventListener('click', () => addMaintenanceSetEntry(set.id));
+            actions.appendChild(addEntryBtn);
+            body.appendChild(actions);
+
+            card.appendChild(body);
+
+            container.appendChild(card);
+        });
+    }
+
+    function renderMaintenanceSetSection() {
+        const section = document.getElementById('maintenance-sets-section');
+        const container = document.getElementById('maintenance-sets-container');
+        if (!section || !container) return;
+        container.innerHTML = '';
+        const rawSets = currentConfig.maintenance_sets && Array.isArray(currentConfig.maintenance_sets.sets)
+            ? currentConfig.maintenance_sets.sets
+            : [];
+        const normalizedSets = normalizeMaintenanceSets({ sets: rawSets }, currentConfig.maintenance_items).value.sets
+            .filter(set => set.name.trim().length > 0 && Array.isArray(set.entries) && set.entries.length > 0);
+        if (normalizedSets.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        const reportLookup = buildMaintenanceItemLookup({
+            groups: Array.isArray(currentReportMaintenance && currentReportMaintenance.groups)
+                ? currentReportMaintenance.groups
+                : getCurrentConfigGroups()
+        }).byId;
+
+        normalizedSets.forEach(set => {
+            const applicableCount = set.entries.filter(entry => reportLookup.has(entry.item_id)).length;
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'maintenance-set-chip';
+            chip.textContent = set.name;
+            chip.disabled = applicableCount === 0;
+            chip.title = applicableCount > 0
+                ? `Käytä huoltosettiä (${applicableCount} kohdetta)`
+                : 'Setin kohteita ei löydy nykyisestä raportista';
+            chip.addEventListener('click', () => applyMaintenanceSet(set.id));
+            container.appendChild(chip);
+        });
+        section.style.display = 'block';
+    }
+
+    function applyMaintenanceSet(setId) {
+        const rawSets = currentConfig.maintenance_sets && Array.isArray(currentConfig.maintenance_sets.sets)
+            ? currentConfig.maintenance_sets.sets
+            : [];
+        const normalizedSets = normalizeMaintenanceSets({ sets: rawSets }, currentConfig.maintenance_items).value.sets;
+        const selectedSet = normalizedSets.find(set => set.id === setId);
+        if (!selectedSet) return;
+
+        const working = collectMaintenanceV2ForSave();
+        const byItemId = new Map();
+        working.groups.forEach(group => {
+            group.items.forEach(item => byItemId.set(item.id, item));
+        });
+
+        let appliedCount = 0;
+        let changed = false;
+        selectedSet.entries.forEach(entry => {
+            const item = byItemId.get(entry.item_id);
+            if (!item) return;
+            const nextStatus = normalizeStatus(entry.status);
+            const nextSubitems = normalizeSelectedSubitems(entry.selected_subitems, item.subitems);
+            if (item.status !== nextStatus) changed = true;
+            if (JSON.stringify(normalizeSubitems(item.selected_subitems)) !== JSON.stringify(nextSubitems)) changed = true;
+            item.status = nextStatus;
+            item.selected_subitems = nextSubitems;
+            appliedCount += 1;
+        });
+
+        if (appliedCount === 0) {
+            alert('Huoltosetin kohteita ei löytynyt tästä raportista.');
+            return;
+        }
+
+        currentReportMaintenance = working;
+        renderMaintenanceSections();
+        if (changed) {
+            evaluateReportDirtyState();
+        }
     }
 
     function removeLegacyItem(legacyId, skipConfirm = false) {
@@ -2926,17 +3583,22 @@
                 status: normalizeStatus(entry.status)
             }));
 
+        const nextLegacyItems = dedupeLegacyItems([...(existing.legacy_items || []), ...orphaned]);
         currentReportMaintenance = {
             schema_version: MAINTENANCE_SCHEMA_VERSION,
             groups: updatedGroups,
-            legacy_items: dedupeLegacyItems([...(existing.legacy_items || []), ...orphaned])
+            legacy_items: nextLegacyItems
         };
         currentReportHasSettingsMismatch = false;
         currentReportLoadedFromLegacyFormat = false;
         renderMaintenanceSections();
         // Conversion should always require explicit save.
         setReportDirty(true);
-        alert('Raportin toimenpidemalli päivitettiin nykyisiin asetuksiin. Tarkista mahdolliset "Poistuneet huoltotoimenpiteet" ja korvaa ne nykyisillä vastineillaan.');
+        if (nextLegacyItems.length > 0) {
+            alert('Raportin toimenpidemalli päivitettiin nykyisiin asetuksiin. Tarkista mahdolliset "Poistuneet huoltotoimenpiteet" ja korvaa ne nykyisillä vastineillaan.');
+        } else {
+            alert('Raportin toimenpidemalli päivitettiin nykyisiin asetuksiin.');
+        }
     }
 
     function renderMaintenanceSections() {
@@ -2960,6 +3622,11 @@
             const content = document.createElement('div');
             content.className = 'document-section-content';
 
+            const helpText = document.createElement('p');
+            helpText.className = 'legacy-help-text';
+            helpText.textContent = LEGACY_REPLACEMENT_HELP_TEXT;
+            content.appendChild(helpText);
+
             legacyItems.forEach(legacyItem => {
                 const itemEl = document.createElement('div');
                 itemEl.className = 'maintenance-item legacy-item';
@@ -2975,7 +3642,7 @@
 
                 const appendixEl = document.createElement('span');
                 appendixEl.className = 'legacy-appendix';
-                appendixEl.textContent = ' - Poistunut huoltotoimenpide';
+                appendixEl.textContent = ' - Aiemmin merkitty huoltotoimenpide';
                 titleEl.appendChild(appendixEl);
 
                 const removeBtn = document.createElement('button');
@@ -3158,6 +3825,7 @@
             container.appendChild(section);
         });
 
+        renderMaintenanceSetSection();
         updateReportUpdateBanner();
     }
 
@@ -3251,6 +3919,7 @@
             alert(`Sama kohdenimi löytyi saman otsikon alta (${first.groupTitle}: ${first.label}). Korjaa duplikaatit tästä otsikosta ennen tallennusta.`);
             return;
         }
+        const maintenanceSets = getMaintenanceSetsFromEditor(maintenanceItems);
         const statusLabels = normalizeStatusLabels({
             done: document.getElementById('conf_status_done').value,
             not_done: document.getElementById('conf_status_not_done').value,
@@ -3277,7 +3946,12 @@
         applyStatusLabels(shopSettings.status_labels);
         await apiFetch('api/save_config', {
             method: 'POST',
-            body: JSON.stringify({ maintenance_items: maintenanceItems, shop_settings: shopSettings, security: security })
+            body: JSON.stringify({
+                maintenance_items: maintenanceItems,
+                maintenance_sets: maintenanceSets,
+                shop_settings: shopSettings,
+                security: security
+            })
         });
         alert('Asetukset tallennettu!');
         window.location.reload();

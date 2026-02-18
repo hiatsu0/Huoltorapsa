@@ -144,7 +144,7 @@ def init_db():
             "groups": [
                 {
                     "title": "Tehdyt huoltotyöt",
-                    "items": ["Moottoriöljyn vaihto", "Öljynsuodattimen vaihto", "Polttoainesuodattimen vaihto", "Jarrunesteen vaihto", "Sytytystulppien vaihto", "Moottorin ilmansuodattimen vaihto", "Raitisilmansuodattimen vaihto", "Saranoiden rasvaus"]
+                    "items": ["Moottoriöljyn vaihto", "Öljynsuodattimen vaihto", "Vaihteistoöljyn vaihto", "Polttoainesuodattimen vaihto", "Jarrunesteen vaihto", "Sytytystulppien vaihto", "Moottorin ilmansuodattimen vaihto", "Raitisilmansuodattimen vaihto", "Apulaitehihnan vaihto", "Saranoiden rasvaus"]
                 },
                 {
                     "title": "JARRUJÄRJESTELMÄ",
@@ -174,7 +174,7 @@ def init_db():
     c.execute("SELECT value FROM config WHERE key='shop_settings'")
     if not c.fetchone():
         default_settings = {
-            "company_text": "Autokorjaamo Oy\nKorjaamokuja 1\n00100 Helsinki\nY-tunnus: 123456-7",
+            "company_text": "Korjaamo Oy\nOsoite 1\n00100 Helsinki\nY-tunnus: 123456-7",
             "hide_na_in_print": True,
             "accent_color": "#009eb8",
             "status_labels": {
@@ -578,6 +578,8 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                 elif path == '/api/save_config':
                     if 'maintenance_items' in data:
                         c.execute("UPDATE config SET value=? WHERE key='maintenance_items'", (json.dumps(data['maintenance_items']),))
+                    if 'maintenance_sets' in data:
+                        c.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", ('maintenance_sets', json.dumps(data['maintenance_sets'])))
                     if 'shop_settings' in data:
                         c.execute("UPDATE config SET value=? WHERE key='shop_settings'", (json.dumps(data['shop_settings']),))
                     security = data.get('security')
