@@ -24,8 +24,12 @@ AUTH_COOKIE_NAME = "huolto_auth"
 AUTH_PBKDF2_ITERATIONS = 120000
 AUTH_SESSION_TTL_SECONDS = 60 * 60 * 24 * 30
 AUTH_CONFIG_KEY = "api_auth"
+AUTH_LOGIN_MAX_FAILURES = 5
+AUTH_LOGIN_PENALTY_SECONDS = 60
 auth_sessions = {}
 auth_sessions_lock = threading.Lock()
+auth_login_failures = {}
+auth_login_failures_lock = threading.Lock()
 
 def read_config_value(key):
     conn = sqlite3.connect(DB_FILE)
@@ -81,6 +85,42 @@ def cleanup_expired_sessions():
         for token in expired:
             del auth_sessions[token]
 
+def get_client_identity(handler):
+    try:
+        return handler.client_address[0] or "unknown"
+    except Exception:
+        return "unknown"
+
+def get_auth_penalty_seconds_remaining(client_id):
+    now = int(time.time())
+    with auth_login_failures_lock:
+        entry = auth_login_failures.get(client_id)
+        if not entry:
+            return 0
+        penalty_until = int(entry.get("penalty_until", 0))
+        if penalty_until <= now:
+            entry["penalty_until"] = 0
+            return 0
+        return penalty_until - now
+
+def register_auth_failure(client_id):
+    now = int(time.time())
+    with auth_login_failures_lock:
+        entry = auth_login_failures.get(client_id, {"fail_count": 0, "penalty_until": 0})
+        fail_count = int(entry.get("fail_count", 0)) + 1
+        penalty_until = int(entry.get("penalty_until", 0))
+        if fail_count % AUTH_LOGIN_MAX_FAILURES == 0:
+            penalty_until = now + AUTH_LOGIN_PENALTY_SECONDS
+        entry["fail_count"] = fail_count
+        entry["penalty_until"] = penalty_until
+        auth_login_failures[client_id] = entry
+        return max(0, penalty_until - now)
+
+def reset_auth_failures(client_id):
+    with auth_login_failures_lock:
+        if client_id in auth_login_failures:
+            del auth_login_failures[client_id]
+
 def init_db():
     # Main DB
     conn = sqlite3.connect(DB_FILE)
@@ -135,7 +175,7 @@ def init_db():
     if not c.fetchone():
         default_settings = {
             "company_text": "Autokorjaamo Oy\nKorjaamokuja 1\n00100 Helsinki\nY-tunnus: 123456-7",
-            "hide_na_in_print": False,
+            "hide_na_in_print": True,
             "accent_color": "#009eb8",
             "status_labels": {
                 "done": "Suoritettu",
@@ -222,6 +262,16 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json(400, {'error': 'invalid_json'})
             return
 
+        client_id = get_client_identity(self)
+        penalty_remaining = get_auth_penalty_seconds_remaining(client_id)
+        if penalty_remaining > 0:
+            self.send_json(429, {
+                'status': 'rate_limited',
+                'auth_required': True,
+                'retry_after': penalty_remaining
+            })
+            return
+
         password = data.get('password', '')
         if not isinstance(password, str):
             password = ''
@@ -232,9 +282,18 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         if not verify_password(password, auth_config):
+            penalty_after_failure = register_auth_failure(client_id)
+            if penalty_after_failure > 0:
+                self.send_json(429, {
+                    'status': 'rate_limited',
+                    'auth_required': True,
+                    'retry_after': penalty_after_failure
+                })
+                return
             self.send_json(403, {'status': 'invalid_password', 'auth_required': True})
             return
 
+        reset_auth_failures(client_id)
         token = secrets.token_urlsafe(32)
         expires_at = int(time.time()) + AUTH_SESSION_TTL_SECONDS
         with auth_sessions_lock:
@@ -532,6 +591,8 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                                 c.execute("DELETE FROM config WHERE key=?", (AUTH_CONFIG_KEY,))
                                 with auth_sessions_lock:
                                     auth_sessions.clear()
+                            with auth_login_failures_lock:
+                                auth_login_failures.clear()
                     response_data = {'status': 'config_updated'}
 
                 conn.commit()
