@@ -175,6 +175,17 @@
             color: #fff;
             font-weight: 600;
         }
+        .report-list th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+        .report-list th .sort-indicator {
+            margin-left: 4px;
+            font-size: 11px;
+            opacity: 0.9;
+            position: relative;
+            top: -2px;
+        }
 
         .report-list tr:hover {
             background-color: #f1f1f1;
@@ -1499,7 +1510,9 @@
                 <thead>
                     <tr>
                         <th class="col-select"><input type="checkbox" id="select-all" onclick="toggleSelectAll()"></th>
-                        <th class="col-date">Pvm</th>
+                        <th class="col-date sortable" onclick="toggleReportDateSort()">
+                            Pvm<span id="date-sort-indicator" class="sort-indicator">↕</span>
+                        </th>
                         <th class="col-customer">Asiakas</th>
                         <th class="col-plate">Rek.nro.</th>
                         <th class="col-vehicle">Ajoneuvo</th>
@@ -1888,6 +1901,7 @@
     let calendarReportsByDate = {};
     let calendarLoadedRange = { start: '', end: '' };
     let calendarMenuDate = '';
+    let reportDateSortDirection = '';
 
     function showAuthDialog() {
         const overlay = document.getElementById('auth-overlay');
@@ -2819,6 +2833,7 @@
         document.getElementById('report_date').valueAsDate = new Date();
         updateCalendarModeButton();
         updateSearchClearButton();
+        updateDateSortHeaderIndicator();
         const authInput = document.getElementById('auth-password-input');
         const usePwCheckbox = document.getElementById('conf_use_password');
         if (authInput) {
@@ -3372,6 +3387,20 @@
         input.focus();
     }
 
+    function updateDateSortHeaderIndicator() {
+        const indicator = document.getElementById('date-sort-indicator');
+        if (!indicator) return;
+        if (reportDateSortDirection === 'asc') indicator.textContent = '↑';
+        else if (reportDateSortDirection === 'desc') indicator.textContent = '↓';
+        else indicator.textContent = '↕';
+    }
+
+    function toggleReportDateSort() {
+        reportDateSortDirection = (reportDateSortDirection === 'desc') ? 'asc' : 'desc';
+        updateDateSortHeaderIndicator();
+        loadReports();
+    }
+
     function changePage(delta) {
         if (isCalendarMode) return;
         currentPage += delta;
@@ -3394,7 +3423,25 @@
         const data = await res.json();
         
         // Handle response format (API now returns object)
-        const reports = data.items || [];
+        const reports = Array.isArray(data.items) ? [...data.items] : [];
+        if (reportDateSortDirection) {
+            reports.sort((a, b) => {
+                const dateA = normalizeIsoDate(a.report_date);
+                const dateB = normalizeIsoDate(b.report_date);
+
+                if (dateA !== dateB) {
+                    if (!dateA) return 1;
+                    if (!dateB) return -1;
+                    return (reportDateSortDirection === 'asc')
+                        ? dateA.localeCompare(dateB)
+                        : dateB.localeCompare(dateA);
+                }
+
+                const idA = Number(a.id) || 0;
+                const idB = Number(b.id) || 0;
+                return idB - idA;
+            });
+        }
         totalItems = data.total || 0;
         const totalPages = data.pages || 1;
 

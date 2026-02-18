@@ -506,14 +506,16 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                     params = []
 
                     if search_q:
-                        wildcard = f"%{search_q}%"
-                        sql_base += """ AND (
-                            customer_name LIKE ?
-                            OR REPLACE(UPPER(license_plate), '-', '') LIKE REPLACE(UPPER(?), '-', '')
-                            OR vin LIKE ?
-                            OR COALESCE(json_extract(data, '$.vehicle_model'), '') LIKE ?
-                        )"""
-                        params = [wildcard, wildcard, wildcard, wildcard]
+                        terms = [term for term in search_q.split() if term]
+                        for term in terms:
+                            wildcard = f"%{term}%"
+                            sql_base += """ AND (
+                                customer_name LIKE ?
+                                OR REPLACE(UPPER(license_plate), '-', '') LIKE REPLACE(UPPER(?), '-', '')
+                                OR vin LIKE ?
+                                OR COALESCE(json_extract(data, '$.vehicle_model'), '') LIKE ?
+                            )"""
+                            params.extend([wildcard, wildcard, wildcard, wildcard])
                     
                     # Get Total Count
                     c.execute(f"SELECT COUNT(*) {sql_base}", params)
