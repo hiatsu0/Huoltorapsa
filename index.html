@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajoneuvon huoltoraportti</title>
+    <link rel="stylesheet" href="./css/all.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';">
+
+    <style>
+        :root {
+            --primary-color: #009eb8;
+            --bg-color: #f4f4f4;
+            --border-color: #ccc;
+            --success-color: #96C11F;
+            --warning-color: #FF0000;
+            --neutral-color: #C7C7C7;
+            --success-bg: rgba(150, 193, 31, 0.1);
+            --warning-bg: rgba(255, 0, 0, 0.1);
+            --neutral-bg: rgba(199, 199, 199, 0.1);
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* Layout & Containers */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-height: 90vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 21px;
+            color: #444;
+        }
+
+        .nav-buttons button {
+            background: none;
+            border: 1px solid #ccc;
+            padding: 10px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-left: 2px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            line-height: 1;
+        }
+
+        .nav-buttons button:hover {
+            background-color: #eee;
+        }
+
+        .nav-buttons button.primary {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .nav-buttons button.primary:hover {
+            filter: brightness(90%);
+        }
+
+        .nav-buttons button.danger {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        .nav-buttons button.danger:disabled {
+            background-color: #e6aeb3;
+            border-color: #e6aeb3;
+            cursor: not-allowed;
+        }
+        
+        .nav-buttons button.active {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        /* Mobile Nav Adjustments */
+        @media (max-width: 600px) {
+            .btn-text { display: none; }
+            .btn-text-short { display: inline; }
+            .btn-config .btn-text, .btn-config .btn-text-short { display: none; }
+            body { padding: 10px; }
+            .container { padding: 15px; }
+			#btn-select-mode .btn-text,
+            #btn-delete-selected .btn-text { display: inline; }
+        }
+        
+        @media (min-width: 601px) {
+            .btn-text-short { display: none; }
+        }
+
+        /* Views */
+        .view { display: none; }
+        .view.active { display: block; }
+
+        /* Dashboard List */
+        .report-list {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .report-list th, .report-list td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .report-list th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .report-list tr:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+        
+        /* Selection Mode Styles */
+        .col-select {
+            width: 40px;
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+        .view.selection-mode .col-select {
+            display: table-cell;
+        }
+        
+        .row-checkbox {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        /* Pagination Controls */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 15px;
+        }
+        .pagination-btn {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .pagination-btn:disabled {
+            background: #f4f4f4;
+            color: #aaa;
+            cursor: default;
+        }
+        .pagination-info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Form Sections */
+        .document-section {
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+
+        .document-section-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            font-weight: bold;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .document-section-content { padding: 14px; }
+
+        /* Responsive Form Grid */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        @media (max-width: 800px) { .form-row { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 400px) { .form-row { grid-template-columns: 1fr; } }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .form-group.hidden { display: none; }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-control {
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            display: block;
+            margin: 0;
+            min-width: 0;
+            max-width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: white;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        /* Traffic Light Selector */
+        .maintenance-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #f9f9f9;
+            padding-bottom: 15px;
+        }
+
+        .maintenance-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .status-selector {
+            display: flex;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .status-option {
+            flex: 1;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+            user-select: none;
+            border-right: 1px solid #eee;
+        }
+        .status-option:last-child { border-right: none; }
+        .status-option i { margin-right: 8px; font-size: 18px; color: #ddd; }
+        .status-option:hover { background-color: #f9f9f9; }
+
+        @media (max-width: 400px) {
+            .status-option { font-size: 12px; padding: 8px; }
+            .status-option i { margin-right: 4px; font-size: 14px; }
+        }
+
+        /* Active States */
+        .status-option[data-value="done"].selected { background-color: var(--success-bg); font-weight: bold; }
+        .status-option[data-value="done"].selected i { color: var(--success-color); }
+
+        .status-option[data-value="not_done"].selected { background-color: var(--warning-bg); font-weight: bold; }
+        .status-option[data-value="not_done"].selected i { color: var(--warning-color); }
+
+        .status-option[data-value="na"].selected { background-color: var(--neutral-bg); font-weight: bold; }
+        .status-option[data-value="na"].selected i { color: var(--neutral-color); }
+
+        /* Config Editor */
+        .config-editor textarea {
+            width: 100%;
+            height: 300px;
+            font-family: monospace;
+            padding: 10px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        /* Attachments */
+        .attachment-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .attachment-thumb {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .attachment-thumb:active { transform: scale(0.95); }
+        .file-upload-btn { display: inline-block; margin-top: 5px; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px; right: 20px;
+            color: white; font-size: 30px;
+            cursor: pointer; z-index: 1001;
+        }
+
+        /* Logo Preview */
+        .logo-preview {
+            height: 100px;
+            width: auto;
+            border: 1px dashed #ccc;
+            margin-top: 10px;
+            display: block;
+            object-fit: contain;
+        }
+
+        /* App Footer */
+        .app-footer {
+            text-align: center;
+            font-size: 10px;
+            color: #ccc;
+            margin-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        /* --- PRINT STYLES --- */
+        #print-view { display: none; }
+
+        @media print {
+            html, body {
+                background: white; margin: 0; padding: 0; height: auto;
+                overflow: visible; font-family: Arial, sans-serif; font-size: 12px; color: #000;
+            }
+            .container {
+                box-shadow: none; max-width: 100%; width: 100%;
+                padding: 0; margin: 0; border: none; min-height: 0;
+            }
+            .nav-buttons, .header, .search-bar, #dashboard-view, #config-view, #editor-view, .modal-overlay, .pagination-container, .app-footer {
+                display: none !important;
+            }
+            #print-view { display: block !important; width: 100%; }
+
+            .print-table { width: 100%; border-collapse: collapse; }
+            .print-table thead { display: table-header-group; }
+            .print-table tbody { display: table-row-group; }
+
+            .print-header-content {
+                display: flex; justify-content: space-between;
+                border-bottom: 2px solid #009eb8; padding-bottom: 10px; margin-bottom: 10px;
+            }
+            .print-left-col { width: 60%; }
+            .print-title { 
+                font-size: 20px; font-weight: bold; color: #009eb8; 
+                text-transform: uppercase; margin-bottom: 10px; 
+            }
+            .print-company-row { display: flex; align-items: flex-start; gap: 15px; }
+            .print-logo { max-width: 120px; max-height: 70px; object-fit: contain; }
+            
+            .print-meta { 
+                width: 38%; text-align: right; 
+                display: grid; grid-template-columns: auto auto;
+                gap: 4px 10px; align-content: start; justify-content: end;
+            }
+            .meta-label { font-weight: bold; text-align: right; }
+            .meta-value { text-align: left; white-space: pre-wrap; }
+
+            .vehicle-grid {
+                display: grid; grid-template-columns: repeat(3, 1fr);
+                gap: 5px; margin-bottom: 15px; border: 1px solid #ccc;
+                padding: 10px; background: #f9f9f9;
+            }
+            .vehicle-item { font-size: 11px; }
+            .vehicle-label { font-weight: bold; color: #666; display: block; margin-bottom: 2px; }
+            .vehicle-value { font-weight: bold; font-size: 12px; }
+
+            .print-section-title {
+                background: #eee; font-weight: bold; padding: 4px 8px;
+                margin-top: 10px; border-left: 4px solid #009eb8;
+                font-size: 11px; text-transform: uppercase;
+                page-break-after: avoid;
+            }
+            
+            .print-items-table {
+                width: 100%; border-collapse: collapse; margin-bottom: 5px; page-break-inside: auto;
+            }
+            .print-items-table tr { page-break-inside: avoid; border-bottom: 1px solid #eee; }
+            .print-items-table td { padding: 3px 8px; vertical-align: middle; }
+            .print-item-name { width: 70%; }
+            .print-item-status { width: 30%; text-align: right; font-weight: bold; }
+
+            .status-done { color: #000; }
+            .status-not_done { color: #d9534f; }
+            .status-na { color: #999; font-style: italic; }
+
+            #print-view.hide-na tr.row-na { display: none; }
+
+            .print-notes {
+                border: 1px solid #ccc; padding: 10px; min-height: 50px;
+                margin-top: 10px; background: #fff; white-space: pre-wrap;
+            }
+            .print-notes-container { page-break-inside: avoid; }
+
+            .print-attachments {
+                margin-top: 20px; display: grid;
+                grid-template-columns: repeat(2, 1fr); gap: 10px;
+            }
+            
+            /* Logic for page breaks is now handled via JS and .force-break class */
+            .force-break {
+                page-break-before: always;
+            }
+
+            .print-attachments img {
+                width: 100%; max-height: 300px; object-fit: contain; border: 1px solid #eee;
+            }
+
+            .print-footer-container { margin-top: 20px; page-break-inside: avoid; }
+            .print-footer-content {
+                border-top: 1px solid #ccc; padding-top: 10px;
+                text-align: center; font-size: 10px; color: #666;
+            }
+            .signature-box {
+                margin-top: 30px; border-top: 1px solid #000;
+                width: 200px; padding-top: 5px;
+                display: inline-block; text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-wrench" style="color:var(--primary-color)"></i> Huoltoraportti</h1>
+        <div class="nav-buttons">
+            <button onclick="showDashboard()">
+                <i class="fas fa-list"></i> 
+                <span class="btn-text">Raportit</span>
+            </button>
+            <button onclick="createNewReport()">
+                <i class="fas fa-plus"></i> 
+                <span class="btn-text">Uusi raportti</span>
+                <span class="btn-text-short">Uusi</span>
+            </button>
+            <button onclick="showConfig()" class="btn-config">
+                <i class="fas fa-cog"></i> 
+                <span class="btn-text">Asetukset</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboard-view" class="view active">
+        <div class="nav-buttons" style="margin-bottom: 10px; text-align: right;">
+            <button onclick="toggleSelectionMode()" id="btn-select-mode">
+                <i class="fas fa-check-square"></i>
+                <span class="btn-text">Valitse</span>
+            </button>
+            <button onclick="deleteSelectedReports()" id="btn-delete-selected" class="danger" style="display:none" disabled>
+                <i class="fas fa-trash"></i>
+                <span class="btn-text">Poista</span>
+            </button>
+        </div>
+
+        <input type="text" class="search-bar" id="search-input" placeholder="Hae rekisterinumerolla, asiakkaalla, ajoneuvolla tai VIN-koodilla..." onkeyup="handleSearch()">
+        
+        <table class="report-list">
+            <thead>
+                <tr>
+                    <th class="col-select"><input type="checkbox" id="select-all" onclick="toggleSelectAll()"></th>
+                    <th>Pvm</th>
+                    <th>Asiakas</th>
+                    <th>Rek.nro.</th>
+                    <th>Ajoneuvo</th>
+                </tr>
+            </thead>
+            <tbody id="report-table-body">
+                <!-- Rows injected here -->
+            </tbody>
+        </table>
+        
+        <div class="pagination-container">
+            <button class="pagination-btn" id="btn-prev" onclick="changePage(-1)" disabled>&lt; Edellinen</button>
+            <span class="pagination-info" id="pagination-info">Sivu 1</span>
+            <button class="pagination-btn" id="btn-next" onclick="changePage(1)" disabled>Seuraava &gt;</button>
+        </div>
+    </div>
+
+    <!-- EDITOR VIEW -->
+    <div id="editor-view" class="view">
+        <div class="nav-buttons" style="margin-bottom: 20px; text-align: right;">
+            <button onclick="saveReport()"><i class="fas fa-save"></i> Tallenna</button>
+            <button class="primary" onclick="preparePrint()"><i class="fas fa-print"></i> Tulosta</button>
+        </div>
+
+        <form id="report-form">
+            <input type="hidden" id="report-id">
+            
+            <!-- Company & Customer -->
+            <div class="document-section">
+                <div class="document-section-header">Yleistiedot</div>
+                <div class="document-section-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Asiakas</label>
+                            <textarea class="form-control" id="customer_name" rows="4" placeholder="Asiakkaan nimi ja osoite..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Huoltopäivä</label>
+                            <input type="date" class="form-control" id="report_date">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicle Info -->
+            <div class="document-section">
+                <div class="document-section-header">Ajoneuvon tiedot</div>
+                <div class="document-section-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Rekisterinumero</label>
+                            <input type="text" class="form-control" id="license_plate" onblur="lookupVehicle()">
+                        </div>
+                        <div class="form-group">
+                            <label>Valmistenumero (VIN)</label>
+                            <input type="text" class="form-control" id="vin">
+                        </div>
+                        <div class="form-group">
+                            <label>Ajoneuvo (Merkki & Malli)</label>
+                            <input type="text" class="form-control" id="vehicle_model">
+                        </div>
+                        <div class="form-group">
+                            <label>Moottorikoodi</label>
+                            <input type="text" class="form-control" id="engine_code">
+                        </div>
+                        <div class="form-group">
+                            <label>Rekisteröity</label>
+                            <input type="text" class="form-control" id="registered_date">
+                        </div>
+                        <div class="form-group">
+                            <label>Ajettu (km)</label>
+                            <input type="number" class="form-control" id="mileage">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Maintenance Items -->
+            <div id="maintenance-sections-container"></div>
+
+            <!-- Additional Work -->
+            <div class="document-section">
+                <div class="document-section-header">Lisätyöt ja huomiot</div>
+                <div class="document-section-content">
+                    <div class="form-group">
+                        <textarea class="form-control" id="additional_notes" rows="4" placeholder="Kirjoita lisätyöt tähän..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attachments -->
+            <div class="document-section">
+                <div class="document-section-header">Liitteet</div>
+                <div class="document-section-content">
+                    <div class="form-group">
+                        <label>Lisää kuvia:</label>
+                        <input type="file" id="file-upload" class="file-upload-btn" accept="image/*" onchange="uploadFile(this)">
+                        <div id="attachment-list" class="attachment-list"></div>
+                        <p style="font-size: 12px; color: #666; margin-top:10;">Nämä tulostuvat raportin loppuun. Napauta kuvaa suurentaaksesi, pitkä painallus poistaa kuvan.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signature -->
+            <div class="document-section">
+                <div class="document-section-header">Allekirjoitus</div>
+                <div class="document-section-content">
+                    <div class="form-group">
+                        <label>Huollon suorittaja</label>
+                        <input type="text" class="form-control" id="mechanic_signature">
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons" style="margin-top: 20px; text-align: right;">
+                <button type="button" onclick="saveReport()"><i class="fas fa-save"></i> Tallenna</button>
+                <button type="button" class="primary" onclick="preparePrint()"><i class="fas fa-print"></i> Tulosta</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- CONFIG VIEW -->
+    <div id="config-view" class="view">
+        <div class="document-section">
+            <div class="document-section-header">Yleiset asetukset</div>
+            <div class="document-section-content">
+                <div class="form-group">
+                    <label>Yrityksen logo</label>
+                    <input type="file" accept="image/*" onchange="uploadLogo(this)">
+                    <img id="conf_logo_preview" src="" class="logo-preview" style="display:none">
+                    <button id="btn_delete_logo" onclick="deleteLogo()" style="margin-top:5px; display:none; padding:5px 10px; background:#ddd; border:none; border-radius:4px; cursor:pointer;">Poista logo</button>
+                </div>
+                <hr style="border:0; border-top:1px solid #eee; margin: 20px 0;">
+                <div class="form-group">
+                    <label>Yrityksen tiedot (Oletusteksti)</label>
+                    <textarea class="form-control" id="conf_company_text" rows="4"></textarea>
+                </div>
+                <div style="margin-top:15px">
+                    <input type="checkbox" id="conf_hide_na">
+                    <label for="conf_hide_na">Piilota "Ei sisälly" -kohdat tulosteesta oletuksena</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="document-section">
+            <div class="document-section-header">Muokkaa huoltokohteita (JSON)</div>
+            <div class="document-section-content">
+                <p>Muokkaa listaa JSON-muodossa. Varmista syntaksi.</p>
+                <div class="config-editor">
+                    <textarea id="config-json"></textarea>
+                </div>
+                <button class="primary" onclick="saveConfig()" style="margin-top:10px; padding: 10px;">Tallenna kaikki muutokset</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Footer (Outside Container) -->
+<div class="app-footer">v1.1 | Makkesoft 2026 | AGPLv3</div>
+
+<!-- Image Modal -->
+<div id="image-modal" class="modal-overlay" onclick="closeImageModal()">
+    <span class="modal-close">&times;</span>
+    <img class="modal-content" id="modal-img-element">
+</div>
+
+<!-- PRINT VIEW -->
+<div id="print-view">
+    <table class="print-table">
+        <thead>
+            <tr>
+                <td>
+                    <div class="print-header-content">
+                        <div class="print-left-col">
+                            <div class="print-title">Huoltoraportti</div>
+                            <div class="print-company-row">
+                                <img id="p_logo_img" class="print-logo" style="display:none">
+                                <div id="p_company" style="white-space: pre-wrap;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="print-meta">
+                            <div class="meta-label" style="margin-top: 26px;">Pvm:</div>
+                            <div class="meta-value" id="p_date" style="margin-top: 26px;"></div>
+                            <div class="meta-label">Asiakas:</div>
+                            <div class="meta-value" id="p_customer"></div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <!-- Vehicle Info -->
+                    <div class="vehicle-grid">
+                        <div class="vehicle-item"><span class="vehicle-label">Rekisterinumero</span><span class="vehicle-value" id="p_plate"></span></div>
+                        <div class="vehicle-item"><span class="vehicle-label">Ajoneuvo</span><span class="vehicle-value" id="p_model"></span></div>
+                        <div class="vehicle-item"><span class="vehicle-label">Ajettu (km)</span><span class="vehicle-value" id="p_mileage"></span></div>
+                        <div class="vehicle-item"><span class="vehicle-label">VIN</span><span class="vehicle-value" id="p_vin"></span></div>
+                        <div class="vehicle-item"><span class="vehicle-label">Moottorikoodi</span><span class="vehicle-value" id="p_engine"></span></div>
+                        <div class="vehicle-item"><span class="vehicle-label">Ensirekisteröinti</span><span class="vehicle-value" id="p_regdate"></span></div>
+                    </div>
+
+                    <div id="p_maintenance_content"></div>
+
+                    <div id="p_notes_container" class="print-notes-container">
+                        <div class="print-section-title">Lisätyöt ja huomiot</div>
+                        <div class="print-notes" id="p_notes"></div>
+                    </div>
+
+                    <!-- Signature (Moved before Attachments) -->
+                    <div class="print-footer-container">
+                        <div class="print-footer-content">
+                            Kiitos käynnistä! Tervetuloa uudelleen.
+                            <br>
+                            <div class="signature-box">
+                                Allekirjoitus: <span id="p_signature"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="p_attachments_container" style="display:none">
+                        <div class="print-section-title">Liitteet</div>
+                        <div class="print-attachments" id="p_attachments"></div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // State
+    let currentConfig = { maintenance_items: {}, shop_settings: {} };
+    let currentAttachments = []; 
+    let currentPage = 1;
+    let itemsPerPage = 30;
+    let totalItems = 0;
+    let isSelectionMode = false;
+    let searchTimeout = null;
+
+    const translations = {
+        'done': '<i class="fas fa-check"></i> Suoritettu',
+        'not_done': '<i class="fas fa-times"></i> Ei tehty',
+        'na': '<span style="color:#ccc">-</span> Ei sisälly'
+    };
+    const STATIC_LOGO_ID = 'company_logo';
+    
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('report_date').valueAsDate = new Date();
+        loadConfig();
+        loadReports();
+    });
+
+    // --- Navigation & Views ---
+    function showDashboard() {
+        switchView('dashboard-view');
+        // If coming back to dashboard, refresh to see changes (e.g. date)
+        loadReports();
+    }
+
+    function switchView(viewId) {
+        document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        // Reset selection mode when leaving dashboard
+        if(viewId !== 'dashboard-view' && isSelectionMode) {
+            toggleSelectionMode(); 
+        }
+    }
+
+    function createNewReport() {
+        document.getElementById('report-form').reset();
+        document.getElementById('report-id').value = '';
+        document.getElementById('report_date').valueAsDate = new Date();
+        
+        currentAttachments = [];
+        renderAttachmentList();
+        
+        document.querySelectorAll('.status-option').forEach(el => el.classList.remove('selected'));
+        document.querySelectorAll('.maintenance-item').forEach(item => {
+            const naOption = item.querySelector('.status-option[data-value="na"]');
+            if(naOption) naOption.click();
+        });
+
+        switchView('editor-view');
+    }
+
+    function showConfig() {
+        switchView('config-view');
+        document.getElementById('config-json').value = JSON.stringify(currentConfig.maintenance_items, null, 4);
+        if(currentConfig.shop_settings) {
+            document.getElementById('conf_company_text').value = currentConfig.shop_settings.company_text || '';
+            document.getElementById('conf_hide_na').checked = !!currentConfig.shop_settings.hide_na_in_print;
+        }
+        
+        const preview = document.getElementById('conf_logo_preview');
+        const delBtn = document.getElementById('btn_delete_logo');
+        preview.src = `api/attachment?id=${STATIC_LOGO_ID}&t=${Date.now()}`;
+        preview.onload = function() { preview.style.display = 'block'; delBtn.style.display = 'inline-block'; };
+        preview.onerror = function() { preview.style.display = 'none'; delBtn.style.display = 'none'; };
+    }
+
+    // --- Selection Mode Logic ---
+    function toggleSelectionMode() {
+        isSelectionMode = !isSelectionMode;
+        const dash = document.getElementById('dashboard-view');
+        const btn = document.getElementById('btn-select-mode');
+        const btnDel = document.getElementById('btn-delete-selected');
+
+        if(isSelectionMode) {
+            dash.classList.add('selection-mode');
+            btn.classList.add('active');
+            btnDel.style.display = 'inline-flex';
+        } else {
+            dash.classList.remove('selection-mode');
+            btn.classList.remove('active');
+            btnDel.style.display = 'none';
+            // Uncheck all
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+            updateDeleteButtonState();
+        }
+    }
+
+    function updateDeleteButtonState() {
+        const checked = document.querySelectorAll('.row-checkbox:checked').length;
+        const btn = document.getElementById('btn-delete-selected');
+        btn.disabled = checked === 0;
+        btn.querySelector('.btn-text').textContent = `Poista (${checked})`;
+    }
+
+    function toggleSelectAll() {
+        const master = document.getElementById('select-all');
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = master.checked);
+        updateDeleteButtonState();
+    }
+
+    async function deleteSelectedReports() {
+        const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+        const ids = Array.from(checkboxes).map(cb => cb.value);
+        
+        if(ids.length === 0) return;
+
+        if(confirm(`Haluatko varmasti poistaa ${ids.length} raporttia? Tämä poistaa myös raporttien liitteet pysyvästi.`)) {
+            const res = await fetch('api/delete_reports', {
+                method: 'POST',
+                body: JSON.stringify({ ids: ids })
+            });
+            const data = await res.json();
+            if(data.status === 'deleted') {
+                toggleSelectionMode(); // Exit mode
+                loadReports(); // Refresh
+            } else {
+                alert('Virhe poistossa');
+            }
+        }
+    }
+
+    // --- Data Loading ---
+    async function loadConfig() {
+        const res = await fetch('api/config?t=' + new Date().getTime());
+        const data = await res.json();
+        currentConfig.maintenance_items = data.maintenance_items || {};
+        currentConfig.shop_settings = data.shop_settings || {};
+        renderMaintenanceSections();
+    }
+
+    function handleSearch() {
+        clearTimeout(searchTimeout);
+        const val = document.getElementById('search-input').value;
+        // Don't search if only 1 char
+        if (val.length === 1) return;
+        
+        searchTimeout = setTimeout(() => {
+            currentPage = 1; // Reset to page 1 on new search
+            loadReports();
+        }, 300);
+    }
+
+    function changePage(delta) {
+        currentPage += delta;
+        loadReports();
+    }
+
+    async function loadReports() {
+        const q = document.getElementById('search-input').value;
+        const res = await fetch(`api/reports?q=${encodeURIComponent(q)}&page=${currentPage}&limit=${itemsPerPage}&t=` + Date.now());
+        const data = await res.json();
+        
+        // Handle response format (API now returns object)
+        const reports = data.items || [];
+        totalItems = data.total || 0;
+        const totalPages = data.pages || 1;
+
+        const tbody = document.getElementById('report-table-body');
+        tbody.innerHTML = '';
+        
+        reports.forEach(r => {
+            let vehicleModel = '-';
+            try {
+                if(r.data) {
+                    const parsed = JSON.parse(r.data);
+                    vehicleModel = parsed.vehicle_model || '-';
+                }
+            } catch(e) {}
+
+            // Customer Name: First line only
+            let customerNameDisplay = r.customer_name || '-';
+            customerNameDisplay = customerNameDisplay.split('\n')[0];
+
+            const tr = document.createElement('tr');
+            
+            // Checkbox Cell
+            const tdCheck = document.createElement('td');
+            tdCheck.className = 'col-select';
+            tdCheck.innerHTML = `<input type="checkbox" class="row-checkbox" value="${r.id}" onclick="event.stopPropagation(); updateDeleteButtonState();">`;
+            tr.appendChild(tdCheck);
+
+            // Data Cells
+            const appendCell = (txt) => {
+                const td = document.createElement('td');
+                td.textContent = txt;
+                tr.appendChild(td);
+            };
+            appendCell(r.report_date);
+            appendCell(customerNameDisplay);
+            appendCell(r.license_plate);
+            appendCell(vehicleModel);
+
+            // Row Click
+            tr.onclick = (e) => {
+                // If in selection mode, toggle checkbox instead of opening
+                if(isSelectionMode) {
+                    const cb = tr.querySelector('.row-checkbox');
+                    cb.checked = !cb.checked;
+                    updateDeleteButtonState();
+                } else {
+                    openReport(r.id);
+                }
+            };
+            
+            tbody.appendChild(tr);
+        });
+
+        // Update Pagination UI
+        document.getElementById('btn-prev').disabled = currentPage <= 1;
+        document.getElementById('btn-next').disabled = currentPage >= totalPages;
+        document.getElementById('pagination-info').textContent = `Sivu ${currentPage} / ${totalPages || 1}`;
+    }
+
+    // --- Attachments ---
+    function uploadFile(input) {
+        if(input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const uuid = await sendImageToServer(e.target.result, file.type);
+                if(uuid) {
+                    currentAttachments.push(uuid);
+                    renderAttachmentList();
+                }
+                input.value = '';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function uploadLogo(input) {
+        if(input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                await sendImageToServer(e.target.result, file.type, STATIC_LOGO_ID);
+                const preview = document.getElementById('conf_logo_preview');
+                preview.src = `api/attachment?id=${STATIC_LOGO_ID}&t=${Date.now()}`;
+                preview.style.display = 'block';
+                document.getElementById('btn_delete_logo').style.display = 'inline-block';
+                input.value = '';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    async function sendImageToServer(base64Data, mime, customId = null) {
+        const payload = { image: base64Data, mime: mime };
+        if(customId) payload.custom_id = customId;
+        const res = await fetch('api/upload_attachment', { method: 'POST', body: JSON.stringify(payload) });
+        const data = await res.json();
+        return data.uuid;
+    }
+
+    function renderAttachmentList() {
+        const list = document.getElementById('attachment-list');
+        list.innerHTML = '';
+        currentAttachments.forEach(uuid => {
+            const img = document.createElement('img');
+            img.src = 'api/attachment?id=' + uuid;
+            img.className = 'attachment-thumb';
+            addLongPressHandler(img, 
+                () => openImageModal(img.src), 
+                async () => {
+                    // Immediate deletion logic
+                    if(confirm("Haluatko poistaa kuvan pysyvästi? Tätä toimintoa ei voi peruuttaa.")) {
+                        try {
+                            const res = await fetch('api/delete_attachment', {
+                                method: 'POST',
+                                body: JSON.stringify({ id: uuid })
+                            });
+                            const data = await res.json();
+                            if(data.status === 'deleted') {
+                                currentAttachments = currentAttachments.filter(id => id !== uuid);
+                                renderAttachmentList();
+                            }
+                        } catch(e) {
+                            alert("Virhe poistossa");
+                        }
+                    }
+                }
+            );
+            list.appendChild(img);
+        });
+    }
+
+    function addLongPressHandler(element, onClick, onLongPress) {
+        let timer;
+        let isLongPress = false;
+        const start = (e) => {
+            if(e.type === 'touchstart' || e.button === 0) {
+                isLongPress = false;
+                timer = setTimeout(() => {
+                    isLongPress = true;
+                    if(navigator.vibrate) navigator.vibrate(50);
+                    onLongPress();
+                }, 600);
+            }
+        };
+        const end = (e) => {
+            if (timer) { clearTimeout(timer); timer = null; }
+            if (!isLongPress) onClick();
+        };
+        const cancel = () => {
+            if (timer) { clearTimeout(timer); timer = null; }
+            isLongPress = false;
+        };
+        element.addEventListener('mousedown', start);
+        element.addEventListener('touchstart', start, {passive: true});
+        element.addEventListener('mouseup', end);
+        element.addEventListener('touchend', end);
+        element.addEventListener('mousemove', cancel);
+        element.addEventListener('touchmove', cancel);
+    }
+
+    // --- Other Functions (Existing Logic) ---
+    function openImageModal(src) {
+        document.getElementById('modal-img-element').src = src;
+        document.getElementById('image-modal').style.display = 'flex';
+    }
+    function closeImageModal() { document.getElementById('image-modal').style.display = 'none'; }
+    
+    async function deleteLogo() {
+        if(confirm("Poistetaanko logo?")) {
+            await fetch('api/delete_attachment', { method: 'POST', body: JSON.stringify({ id: STATIC_LOGO_ID }) });
+            document.getElementById('conf_logo_preview').style.display = 'none';
+            document.getElementById('btn_delete_logo').style.display = 'none';
+        }
+    }
+
+    function renderMaintenanceSections() {
+        const container = document.getElementById('maintenance-sections-container');
+        container.innerHTML = '';
+        if (!currentConfig.maintenance_items || !currentConfig.maintenance_items.groups) return;
+
+        currentConfig.maintenance_items.groups.forEach((group, groupIndex) => {
+            const section = document.createElement('div');
+            section.className = 'document-section';
+            let itemsHtml = '';
+            group.items.forEach((item, itemIndex) => {
+                const itemId = `item_${groupIndex}_${itemIndex}`;
+                itemsHtml += `
+                    <div class="maintenance-item" id="${itemId}" data-label="${item}">
+                        <div class="maintenance-title">${item}</div>
+                        <div class="status-selector">
+                            <div class="status-option" data-value="done" onclick="selectStatus('${itemId}', 'done')"><i class="fas fa-check-circle"></i> Suoritettu</div>
+                            <div class="status-option" data-value="not_done" onclick="selectStatus('${itemId}', 'not_done')"><i class="fas fa-times-circle"></i> Ei tehty</div>
+                            <div class="status-option selected" data-value="na" onclick="selectStatus('${itemId}', 'na')"><i class="fas fa-minus-circle"></i> Ei sisälly</div>
+                        </div>
+                        <input type="hidden" name="status_${itemId}" value="na">
+                    </div>`;
+            });
+            section.innerHTML = `<div class="document-section-header">${group.title}</div><div class="document-section-content">${itemsHtml}</div>`;
+            container.appendChild(section);
+        });
+    }
+
+    window.selectStatus = function(itemId, status) {
+        const container = document.getElementById(itemId);
+        container.querySelector('input').value = status;
+        container.querySelectorAll('.status-option').forEach(opt => {
+            opt.classList.remove('selected');
+            if (opt.dataset.value === status) opt.classList.add('selected');
+        });
+    }
+
+    async function lookupVehicle() {
+        const plate = document.getElementById('license_plate').value;
+        if (plate.length < 2) return;
+        const res = await fetch(`api/lookup_vehicle?plate=${encodeURIComponent(plate)}`);
+        const data = await res.json();
+        if (data.vin) {
+            ['vin', 'vehicle_model', 'engine_code', 'registered_date'].forEach(f => {
+                if(!document.getElementById(f).value) document.getElementById(f).value = data[f] || '';
+            });
+        }
+    }
+
+    async function saveReport(silent = false) {
+        const report = {
+            id: document.getElementById('report-id').value,
+            customer_name: document.getElementById('customer_name').value,
+            report_date: document.getElementById('report_date').value,
+            license_plate: document.getElementById('license_plate').value,
+            vin: document.getElementById('vin').value,
+            vehicle_model: document.getElementById('vehicle_model').value,
+            engine_code: document.getElementById('engine_code').value,
+            registered_date: document.getElementById('registered_date').value,
+            mileage: document.getElementById('mileage').value,
+            additional_notes: document.getElementById('additional_notes').value,
+            mechanic_signature: document.getElementById('mechanic_signature').value,
+            items: {},
+            attachments: currentAttachments
+        };
+        document.querySelectorAll('.maintenance-item').forEach(el => report.items[el.dataset.label] = el.querySelector('input').value);
+        
+        const res = await fetch('api/save_report', { method: 'POST', body: JSON.stringify(report) });
+        const result = await res.json();
+        if (result.status === 'created' || result.status === 'updated') {
+            document.getElementById('report-id').value = result.id;
+            if(!silent) alert('Raportti tallennettu!');
+            return true;
+        } else {
+            alert('Virhe tallennuksessa');
+            return false;
+        }
+    }
+
+    async function openReport(id) {
+        const res = await fetch(`api/report?id=${id}`);
+        const data = await res.json();
+        createNewReport(); 
+        
+        document.getElementById('report-id').value = data.id;
+        document.getElementById('customer_name').value = data.customer_name || '';
+        document.getElementById('report_date').value = data.report_date || '';
+        document.getElementById('license_plate').value = data.license_plate || '';
+        document.getElementById('vin').value = data.vin || '';
+        document.getElementById('vehicle_model').value = data.vehicle_model || '';
+        document.getElementById('engine_code').value = data.engine_code || '';
+        document.getElementById('registered_date').value = data.registered_date || '';
+        document.getElementById('mileage').value = data.mileage || '';
+        document.getElementById('additional_notes').value = data.additional_notes || '';
+        document.getElementById('mechanic_signature').value = data.mechanic_signature || '';
+        
+        currentAttachments = data.attachments || [];
+        renderAttachmentList();
+
+        if (data.items) {
+            document.querySelectorAll('.maintenance-item').forEach(el => {
+                const status = data.items[el.dataset.label];
+                if (status) selectStatus(el.id, status);
+            });
+        }
+        switchView('editor-view');
+    }
+
+    async function saveConfig() {
+        try {
+            const maintenanceItems = JSON.parse(document.getElementById('config-json').value);
+            const shopSettings = {
+                company_text: document.getElementById('conf_company_text').value,
+                hide_na_in_print: document.getElementById('conf_hide_na').checked
+            };
+            await fetch('api/save_config', {
+                method: 'POST',
+                body: JSON.stringify({ maintenance_items: maintenanceItems, shop_settings: shopSettings })
+            });
+            alert('Asetukset tallennettu. Lataa sivu uudelleen.');
+            window.location.reload();
+        } catch (e) {
+            alert('Virheellinen JSON! Tarkista syntaksi.');
+        }
+    }
+
+    async function preparePrint() {
+        if(!(await saveReport(true))) return;
+
+        const hideNa = currentConfig.shop_settings && currentConfig.shop_settings.hide_na_in_print;
+        const printView = document.getElementById('print-view');
+        printView.className = hideNa ? 'hide-na' : '';
+
+        // Fill Data
+        document.getElementById('p_company').textContent = (currentConfig.shop_settings && currentConfig.shop_settings.company_text) ? currentConfig.shop_settings.company_text : '';
+        document.getElementById('p_customer').textContent = document.getElementById('customer_name').value;
+        document.getElementById('p_date').textContent = document.getElementById('report_date').value;
+        document.getElementById('p_plate').textContent = document.getElementById('license_plate').value;
+        document.getElementById('p_vin').textContent = document.getElementById('vin').value;
+        document.getElementById('p_model').textContent = document.getElementById('vehicle_model').value;
+        document.getElementById('p_engine').textContent = document.getElementById('engine_code').value;
+        document.getElementById('p_regdate').textContent = document.getElementById('registered_date').value;
+        document.getElementById('p_mileage').textContent = document.getElementById('mileage').value;
+        
+        const notes = document.getElementById('additional_notes').value;
+        document.getElementById('p_notes').textContent = notes;
+        document.getElementById('p_notes_container').style.display = notes.trim() ? 'block' : 'none';
+        document.getElementById('p_signature').textContent = document.getElementById('mechanic_signature').value;
+
+        // Logo
+        const logoImg = document.getElementById('p_logo_img');
+        await new Promise(resolve => {
+            logoImg.onload = () => { logoImg.style.display = 'block'; resolve(); };
+            logoImg.onerror = () => { logoImg.style.display = 'none'; resolve(); };
+            logoImg.src = `api/attachment?id=${STATIC_LOGO_ID}&t=${Date.now()}`;
+        });
+
+        // Maintenance
+        const pContainer = document.getElementById('p_maintenance_content');
+        pContainer.innerHTML = '';
+        if(currentConfig.maintenance_items && currentConfig.maintenance_items.groups) {
+            currentConfig.maintenance_items.groups.forEach(group => {
+                let sectionItemsHtml = '';
+                let visibleCount = 0;
+                group.items.forEach(itemLabel => {
+                    const el = Array.from(document.querySelectorAll('.maintenance-item')).find(e => e.dataset.label === itemLabel);
+                    const status = el ? el.querySelector('input').value : 'na';
+                    if (status !== 'na') visibleCount++;
+                    sectionItemsHtml += `<tr class="${status==='na'?'row-na':''}"><td class="print-item-name">${itemLabel}</td><td class="print-item-status status-${status}">${translations[status]}</td></tr>`;
+                });
+                if((!hideNa || (hideNa && visibleCount > 0)) && group.items.length > 0) {
+                     pContainer.innerHTML += `<div class="print-section-title">${group.title}</div><table class="print-items-table"><tbody>${sectionItemsHtml}</tbody></table>`;
+                }
+            });
+        }
+
+        // Attachments
+        const pAttContainer = document.getElementById('p_attachments');
+        pAttContainer.innerHTML = '';
+        const attWrapper = document.getElementById('p_attachments_container');
+        
+        if (currentAttachments.length > 0) {
+            attWrapper.style.display = 'block';
+            currentAttachments.forEach(uuid => {
+                const img = document.createElement('img');
+                img.src = 'api/attachment?id=' + uuid;
+                pAttContainer.appendChild(img);
+            });
+        } else {
+            attWrapper.style.display = 'none';
+        }
+
+        // --- Page Break Optimizer ---
+        // Temporarily display print view to measure content height
+        const originalStyle = {
+            display: printView.style.display,
+            visibility: printView.style.visibility,
+            position: printView.style.position,
+            zIndex: printView.style.zIndex
+        };
+
+        printView.style.display = 'block';
+        printView.style.visibility = 'hidden';
+        printView.style.position = 'absolute';
+        printView.style.top = '0';
+        printView.style.left = '0';
+        printView.style.width = '100%';
+        printView.style.zIndex = '-9999';
+
+        // Wait for render cycle (though sync access to offsetHeight triggers reflow)
+        const footer = document.querySelector('.print-footer-container');
+        // Calculate where the footer ends
+        const footerBottom = footer.getBoundingClientRect().bottom + window.scrollY;
+        
+        // Conservative Page Height (A4 @ 96DPI is ~1123px). 
+        // Using 1000px to safeguard against margins and browser differences.
+        const PAGE_HEIGHT = 1000; 
+        
+        const positionOnPage = footerBottom % PAGE_HEIGHT;
+        const spaceRemaining = PAGE_HEIGHT - positionOnPage;
+        
+        // Reset class
+        attWrapper.classList.remove('force-break');
+        
+        // Logic: If attachments exist and we have less than ~250px remaining space on current page
+        // (enough for title and header or small image), force a break.
+        // However, if we are very near top of page (positionOnPage small), spaceRemaining is large, so no break.
+        if (currentAttachments.length > 0 && spaceRemaining < 250) {
+            attWrapper.classList.add('force-break');
+        }
+
+        // Restore styles
+        printView.style.display = originalStyle.display;
+        printView.style.visibility = originalStyle.visibility;
+        printView.style.position = originalStyle.position;
+        printView.style.zIndex = originalStyle.zIndex;
+
+        window.print();
+    }
+</script>
+
+</body>
+</html>
