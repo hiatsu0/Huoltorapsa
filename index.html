@@ -128,12 +128,40 @@
         /* Views */
         .view { display: none; }
         .view.active { display: block; }
+        #dashboard-view {
+            position: relative;
+        }
+
+        .dashboard-toolbar {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .dashboard-toolbar-actions {
+            display: inline-flex;
+            gap: 4px;
+            margin-left: auto;
+        }
+        .dashboard-toolbar-actions button {
+            margin-left: 0;
+        }
 
         /* Dashboard List */
+        .report-list-card {
+            margin-top: 15px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eee;
+            overflow: hidden;
+        }
         .report-list {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 0;
         }
 
         .report-list th, .report-list td {
@@ -143,7 +171,8 @@
         }
 
         .report-list th {
-            background-color: #f8f9fa;
+            background-color: var(--primary-color);
+            color: #fff;
             font-weight: 600;
         }
 
@@ -176,9 +205,16 @@
             cursor: pointer;
         }
         @media (max-width: 600px) {
+            .report-list-card {
+                margin-top: 10px;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+                overflow: visible;
+            }
             .report-list {
                 border-collapse: separate;
-                border-spacing: 0 8px;
+                border-spacing: 1px 8px;
             }
             .report-list thead {
                 display: none;
@@ -192,8 +228,16 @@
                 gap: 4px 10px;
                 padding: 10px 12px;
                 border: 1px solid #e5e5e5;
+                border-color: color-mix(in srgb, var(--primary-color) 24%, #d8e1e6);
                 border-radius: 8px;
                 background: #fff;
+                box-shadow: 0 2px 8px color-mix(in srgb, var(--primary-color) 9%, transparent);
+                transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+            }
+            .report-list tbody tr:hover {
+                background: #fff;
+                border-color: color-mix(in srgb, var(--primary-color) 38%, #bccfd8);
+                box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-color) 14%, transparent);
             }
             .report-list tbody td {
                 display: block;
@@ -234,6 +278,11 @@
                     "check date customer"
                     "check plate plate";
             }
+            .view.selection-mode .report-list tbody tr.row-selected {
+                background: color-mix(in srgb, var(--primary-color) 10%, #fff);
+                border-color: color-mix(in srgb, var(--primary-color) 52%, #b7cad3);
+                box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 24%, transparent);
+            }
             .view.selection-mode .report-list tbody td.col-select {
                 display: flex;
                 grid-area: check;
@@ -241,16 +290,257 @@
                 justify-content: center;
                 padding-top: 2px;
             }
+            .calendar-month-grid {
+                grid-template-columns: 1fr;
+            }
+            .calendar-day,
+            .calendar-day-placeholder {
+                min-height: 36px;
+            }
         }
 
         .search-bar {
             width: 100%;
             padding: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 0;
+            padding-right: 34px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 16px;
             box-sizing: border-box;
+        }
+        .search-bar-wrap {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .search-clear-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border: 0;
+            border-radius: 999px;
+            background: #8f98a1;
+            color: #fff;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            line-height: 1;
+            padding: 0;
+        }
+        .search-clear-btn:hover {
+            background: #6f7780;
+        }
+        .search-clear-btn.hidden {
+            display: none;
+        }
+
+        .dashboard-calendar {
+            display: none;
+            margin-top: 10px;
+        }
+        .calendar-month-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        @media (max-width: 700px) {
+            .calendar-month-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .calendar-month-card {
+            border: 1px solid #e5e5e5;
+            border-color: color-mix(in srgb, var(--primary-color) 28%, #d5dde1);
+            border-radius: 8px;
+            padding: 12px;
+            background: #fff;
+            box-shadow: 0 2px 8px color-mix(in srgb, var(--primary-color) 10%, transparent);
+        }
+        .calendar-month-title {
+            font-weight: 700;
+            color: #444;
+            margin-bottom: 10px;
+            text-transform: capitalize;
+        }
+        .calendar-weekdays,
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
+        }
+        .calendar-weekdays div {
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            color: #666;
+            padding: 3px 0;
+        }
+        .calendar-day,
+        .calendar-day-placeholder {
+            min-height: 40px;
+            border-radius: 6px;
+        }
+        .calendar-day-placeholder {
+            background: #f8f9fa;
+        }
+        .calendar-day {
+            border: 1px solid #e8e8e8;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333;
+            display: block;
+            position: relative;
+            text-align: left;
+            padding: 6px 7px 14px 7px;
+            transition: background-color 0.15s, border-color 0.15s;
+        }
+        .calendar-day:hover {
+            border-color: #bbb;
+            background: #f8f8f8;
+        }
+        .calendar-day.today {
+            border-color: var(--primary-color);
+        }
+        .calendar-day .day-number {
+            font-weight: 600;
+            line-height: 1;
+            display: inline-block;
+        }
+        .calendar-day .day-count {
+            position: absolute;
+            right: 5px;
+            bottom: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #444;
+            line-height: 1;
+            padding: 1px 3px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.65);
+        }
+        .calendar-day.has-reports-1 {
+            background: #eaf5f8;
+            border-color: #cfe6ec;
+        }
+        .calendar-day.has-reports-2 {
+            background: #cfe6ec;
+            border-color: #a4d2dd;
+        }
+        .calendar-day.has-reports-3 {
+            background: #a4d2dd;
+            border-color: #79bccd;
+        }
+        .calendar-controls {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .calendar-controls button {
+            margin-left: 0;
+        }
+        .calendar-day-menu {
+            position: fixed;
+            z-index: 2000;
+            width: min(360px, calc(100vw - 20px));
+            max-height: min(420px, calc(100vh - 20px));
+            overflow: auto;
+            background: #fff;
+            border: 1px solid #d8d8d8;
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.14);
+            padding: 12px;
+        }
+        .calendar-day-menu.hidden {
+            display: none;
+        }
+        .calendar-day-menu-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #444;
+            text-transform: capitalize;
+        }
+        .calendar-day-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .calendar-day-menu-empty,
+        .calendar-day-menu-item {
+            padding: 7px 8px;
+            border-radius: 6px;
+            border: 1px solid #efefef;
+            font-size: 13px;
+        }
+        .calendar-day-menu-empty {
+            background: #fafafa;
+            color: #666;
+            border-style: dashed;
+        }
+        .calendar-day-menu-item {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            align-items: center;
+            background: #fff;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            appearance: none;
+            font-family: inherit;
+            color: #333;
+        }
+        .calendar-day-menu-item:hover {
+            background: #f7f7f7;
+        }
+        .calendar-day-menu-plate {
+            font-weight: 700;
+        }
+        .calendar-day-menu-customer {
+            color: #555;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .calendar-day-menu-create {
+            background: none;
+            border: 1px solid #ccc;
+            padding: 10px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            line-height: 1;
+            margin-left: 0;
+            width: 100%;
+            justify-content: center;
+        }
+        .calendar-day-menu-create:hover {
+            background-color: #eee;
+        }
+        #dashboard-view.calendar-mode .search-bar,
+        #dashboard-view.calendar-mode .search-bar-wrap,
+        #dashboard-view.calendar-mode .report-list-card,
+        #dashboard-view.calendar-mode .report-list,
+        #dashboard-view.calendar-mode .pagination-container,
+        #dashboard-view.calendar-mode #btn-select-mode,
+        #dashboard-view.calendar-mode #btn-delete-selected {
+            display: none;
+        }
+        #dashboard-view.calendar-mode .dashboard-calendar {
+            display: block;
         }
 
         /* Pagination Controls */
@@ -1039,7 +1329,7 @@
                 box-shadow: none; max-width: 100%; width: 100%;
                 padding: 0; margin: 0; border: none; min-height: 0;
             }
-            .nav-buttons, .header, .search-bar, #dashboard-view, #config-view, #editor-view, .modal-overlay, .pagination-container, .app-footer {
+            .nav-buttons, .header, .search-bar, #dashboard-view, #config-view, #editor-view, .modal-overlay, .pagination-container, .app-footer, .calendar-day-menu {
                 display: none !important;
             }
             #print-view { display: block !important; width: 100%; }
@@ -1166,38 +1456,70 @@
 
     <!-- DASHBOARD VIEW -->
     <div id="dashboard-view" class="view active">
-        <div class="nav-buttons" style="margin-bottom: 10px; text-align: right;">
-            <button onclick="toggleSelectionMode()" id="btn-select-mode">
-                <i class="fas fa-check-square"></i>
-                <span class="btn-text">Valitse</span>
+        <div class="nav-buttons dashboard-toolbar">
+            <button onclick="toggleCalendarMode()" id="btn-calendar-mode">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="btn-text">Kalenteri</span>
+                <span class="btn-text-short">Kalenteri</span>
             </button>
-            <button onclick="deleteSelectedReports()" id="btn-delete-selected" class="danger" style="display:none" disabled>
-                <i class="fas fa-trash"></i>
-                <span class="btn-text">Poista</span>
+            <div class="dashboard-toolbar-actions">
+                <button onclick="toggleSelectionMode()" id="btn-select-mode">
+                    <i class="fas fa-check-square"></i>
+                    <span class="btn-text">Valitse</span>
+                </button>
+                <button onclick="deleteSelectedReports()" id="btn-delete-selected" class="danger" style="display:none" disabled>
+                    <i class="fas fa-trash"></i>
+                    <span class="btn-text">Poista</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="search-bar-wrap">
+            <input type="text" class="search-bar" id="search-input" placeholder="Hae rekisterinumerolla, asiakkaalla, ajoneuvolla tai VIN-koodilla..." oninput="handleSearch()">
+            <button type="button" id="search-clear-btn" class="search-clear-btn hidden" onclick="clearSearch()" title="Tyhjennä haku" aria-label="Tyhjennä haku">
+                <i class="fas fa-times"></i>
             </button>
         </div>
 
-        <input type="text" class="search-bar" id="search-input" placeholder="Hae rekisterinumerolla, asiakkaalla, ajoneuvolla tai VIN-koodilla..." onkeyup="handleSearch()">
+        <div id="dashboard-calendar" class="dashboard-calendar">
+            <div class="nav-buttons calendar-controls">
+                <button onclick="shiftCalendarMonths(-1)">&lt; Edellinen</button>
+                <button onclick="jumpCalendarToToday()">Tänään</button>
+                <button onclick="shiftCalendarMonths(1)">Seuraava &gt;</button>
+            </div>
+            <div id="calendar-months" class="calendar-month-grid"></div>
+        </div>
         
-        <table class="report-list">
-            <thead>
-                <tr>
-                    <th class="col-select"><input type="checkbox" id="select-all" onclick="toggleSelectAll()"></th>
-                    <th class="col-date">Pvm</th>
-                    <th class="col-customer">Asiakas</th>
-                    <th class="col-plate">Rek.nro.</th>
-                    <th class="col-vehicle">Ajoneuvo</th>
-                </tr>
-            </thead>
-            <tbody id="report-table-body">
-                <!-- Rows injected here -->
-            </tbody>
-        </table>
+        <div class="report-list-card">
+            <table class="report-list">
+                <thead>
+                    <tr>
+                        <th class="col-select"><input type="checkbox" id="select-all" onclick="toggleSelectAll()"></th>
+                        <th class="col-date">Pvm</th>
+                        <th class="col-customer">Asiakas</th>
+                        <th class="col-plate">Rek.nro.</th>
+                        <th class="col-vehicle">Ajoneuvo</th>
+                    </tr>
+                </thead>
+                <tbody id="report-table-body">
+                    <!-- Rows injected here -->
+                </tbody>
+            </table>
+        </div>
         
         <div class="pagination-container">
             <button class="pagination-btn" id="btn-prev" onclick="changePage(-1)" disabled>&lt; Edellinen</button>
             <span class="pagination-info" id="pagination-info">Sivu 1</span>
             <button class="pagination-btn" id="btn-next" onclick="changePage(1)" disabled>Seuraava &gt;</button>
+        </div>
+
+        <div id="calendar-day-menu" class="calendar-day-menu hidden">
+            <div id="calendar-day-menu-title" class="calendar-day-menu-title"></div>
+            <div id="calendar-day-menu-list" class="calendar-day-menu-list"></div>
+            <button id="calendar-day-menu-create" class="calendar-day-menu-create" onclick="createNewReportFromCalendarDay()">
+                <i class="fas fa-plus"></i>
+                <span>Uusi raportti</span>
+            </button>
         </div>
     </div>
 
@@ -1374,7 +1696,7 @@
         <div class="document-section">
             <div class="document-section-header">Muokkaa huoltokohteita</div>
             <div class="document-section-content">
-                <p class="config-help">Voit lisätä, nimetä uudelleen, järjestellä ja poistaa otsikoita tai kohteita. Tallennettujen raporttien alkuperäinen rakenne säilyy raportissa, joten vanhat raportit pysyvät tulostettavina myös asetusten muutosten jälkeen. Muuttuneet asetukset on päivitettäissä aiemmin tallennettuihin raportteihin, jolloin nimitykset ja järjestys päivittyvät. Kohteet jotka olivat raportilla aiemmin, mutta joita ei enää ole asetuksissa löytyvät "Poistuneet huoltotoimenpiteet" -listasta kunnes etsit niille vastineen tai poistat ne raportilta.</p>
+                <p class="config-help">Voit lisätä, nimetä uudelleen, järjestellä ja poistaa otsikoita tai kohteita. Tallennettujen raporttien alkuperäinen rakenne säilyy raportissa, joten vanhat raportit pysyvät tulostettavina myös asetusten muutosten jälkeen. Muuttuneet asetukset on päivitettävissä aiemmin tallennettuihin raportteihin, jolloin nimitykset, alikohdat ja järjestys päivittyvät. Kohteet jotka olivat raportilla aiemmin, mutta joita ei enää ole asetuksissa, löytyvät "Poistuneet huoltotoimenpiteet" -listasta kunnes etsit niille vastineen tai poistat ne raportilta.</p>
                 <div class="config-editor">
                     <div class="config-actions">
                         <button type="button" class="cfg-btn" onclick="addConfigGroup()"><i class="fas fa-plus"></i> Lisää otsikko</button>
@@ -1524,6 +1846,14 @@
     const statusTexts = { ...DEFAULT_STATUS_TEXTS };
     const DEFAULT_ACCENT_COLOR = '#009eb8';
     const STATIC_LOGO_ID = 'company_logo';
+    const CALENDAR_WEEKDAY_LABELS = ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'];
+    const CALENDAR_MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat('fi-FI', { month: 'long', year: 'numeric' });
+    const CALENDAR_DAY_LABEL_FORMATTER = new Intl.DateTimeFormat('fi-FI', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
 
     let currentConfig = { maintenance_items: {}, maintenance_sets: {}, shop_settings: {}, security: {} };
     let currentAttachments = [];
@@ -1549,6 +1879,11 @@
     let authDialogResolver = null;
     let authLockUntilMs = 0;
     let authLockTimerId = null;
+    let isCalendarMode = false;
+    let calendarStartMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    let calendarReportsByDate = {};
+    let calendarLoadedRange = { start: '', end: '' };
+    let calendarMenuDate = '';
 
     function showAuthDialog() {
         const overlay = document.getElementById('auth-overlay');
@@ -1704,6 +2039,53 @@
     function nextConfigItemId() { return nextId('item'); }
     function nextMaintenanceSetId() { return nextId('set'); }
     function nextLegacyItemId() { return nextId('legacy'); }
+
+    function normalizeIsoDate(value) {
+        const trimmed = (typeof value === 'string') ? value.trim() : '';
+        return /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? trimmed : '';
+    }
+
+    function parseIsoDate(value) {
+        const normalized = normalizeIsoDate(value);
+        if (!normalized) return null;
+        const [year, month, day] = normalized.split('-').map(num => parseInt(num, 10));
+        return new Date(year, month - 1, day);
+    }
+
+    function formatIsoDate(date) {
+        if (!(date instanceof Date)) return '';
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function getMonthStart(date) {
+        return new Date(date.getFullYear(), date.getMonth(), 1);
+    }
+
+    function getMonthEnd(date) {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    }
+
+    function addMonths(date, count) {
+        return new Date(date.getFullYear(), date.getMonth() + count, 1);
+    }
+
+    function capitalizeFirst(text) {
+        if (!text) return '';
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    function formatCalendarMonthLabel(date) {
+        return capitalizeFirst(CALENDAR_MONTH_LABEL_FORMATTER.format(date));
+    }
+
+    function formatCalendarDayLabel(dateIso) {
+        const parsed = parseIsoDate(dateIso);
+        if (!parsed) return dateIso;
+        return capitalizeFirst(CALENDAR_DAY_LABEL_FORMATTER.format(parsed));
+    }
 
     function normalizeStatus(status) {
         return Object.prototype.hasOwnProperty.call(statusTexts, status) ? status : 'na';
@@ -1986,7 +2368,7 @@
     function formatMaintenanceItemLabelForPrint(item, suffix = '') {
         const baseLabel = (item && typeof item.label === 'string') ? item.label.trim() : '';
         const extras = getMaintenanceItemExtraDetails(item);
-        const extrasText = extras.length > 0 ? ` — ${extras.join(', ')}` : '';
+        const extrasText = extras.length > 0 ? `: ${extras.join(', ')}` : '';
         return `${baseLabel}${suffix}${extrasText}`;
     }
 
@@ -2431,6 +2813,8 @@
     // --- Initialization ---
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('report_date').valueAsDate = new Date();
+        updateCalendarModeButton();
+        updateSearchClearButton();
         const authInput = document.getElementById('auth-password-input');
         const usePwCheckbox = document.getElementById('conf_use_password');
         if (authInput) {
@@ -2445,6 +2829,12 @@
             usePwCheckbox.addEventListener('change', updateSecurityPasswordInputState);
         }
         document.addEventListener('keydown', handleGlobalShortcuts);
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') closeCalendarDayMenu();
+        });
+        document.addEventListener('click', handleCalendarOutsideClick);
+        window.addEventListener('resize', handleCalendarViewportChange);
+        window.addEventListener('scroll', handleCalendarViewportChange, true);
         initReportDirtyTracking();
         initConfigDirtyTracking();
         loadConfig();
@@ -2456,7 +2846,12 @@
         if (!confirmDiscardUnsavedReportChanges('Raportit')) return;
         if (!confirmDiscardUnsavedConfigChanges('Raportit')) return;
         switchView('dashboard-view');
+        if (isCalendarMode) {
+            setCalendarMode(false);
+            return;
+        }
         // If coming back to dashboard, refresh to see changes (e.g. date)
+        invalidateCalendarCache();
         loadReports();
     }
 
@@ -2466,6 +2861,9 @@
         // Reset selection mode when leaving dashboard
         if(viewId !== 'dashboard-view' && isSelectionMode) {
             toggleSelectionMode(); 
+        }
+        if (viewId !== 'dashboard-view') {
+            closeCalendarDayMenu();
         }
     }
 
@@ -2531,8 +2929,315 @@
         markCurrentConfigAsSaved();
     }
 
+    function updateCalendarModeButton() {
+        const btn = document.getElementById('btn-calendar-mode');
+        if (!btn) return;
+        const icon = btn.querySelector('i');
+        const longText = btn.querySelector('.btn-text');
+        const shortText = btn.querySelector('.btn-text-short');
+        if (isCalendarMode) {
+            if (icon) icon.className = 'fas fa-list';
+            if (longText) longText.textContent = 'Lista';
+            if (shortText) shortText.textContent = 'Lista';
+            btn.classList.add('active');
+            btn.title = 'Vaihda listanäkymään';
+        } else {
+            if (icon) icon.className = 'fas fa-calendar-alt';
+            if (longText) longText.textContent = 'Kalenteri';
+            if (shortText) shortText.textContent = 'Kalenteri';
+            btn.classList.remove('active');
+            btn.title = 'Vaihda kalenterinäkymään';
+        }
+    }
+
+    function toggleCalendarMode() {
+        setCalendarMode(!isCalendarMode);
+    }
+
+    function setCalendarMode(enabled) {
+        const nextMode = !!enabled;
+        if (nextMode === isCalendarMode) {
+            if (nextMode) loadReports();
+            return;
+        }
+        if (nextMode && isSelectionMode) {
+            toggleSelectionMode();
+        }
+        isCalendarMode = nextMode;
+        const dashboard = document.getElementById('dashboard-view');
+        if (dashboard) dashboard.classList.toggle('calendar-mode', isCalendarMode);
+        if (!isCalendarMode) closeCalendarDayMenu();
+        updateCalendarModeButton();
+        loadReports();
+    }
+
+    function invalidateCalendarCache() {
+        calendarReportsByDate = {};
+        calendarLoadedRange = { start: '', end: '' };
+    }
+
+    function shiftCalendarMonths(delta) {
+        if (!isCalendarMode) return;
+        calendarStartMonth = addMonths(calendarStartMonth, delta);
+        closeCalendarDayMenu();
+        loadReports();
+    }
+
+    function jumpCalendarToToday() {
+        if (!isCalendarMode) return;
+        const now = new Date();
+        calendarStartMonth = getMonthStart(now);
+        closeCalendarDayMenu();
+        loadReports();
+    }
+
+    function handleCalendarOutsideClick(event) {
+        if (!isCalendarMode || !calendarMenuDate) return;
+        if (event.target.closest('.calendar-day')) return;
+        if (event.target.closest('#calendar-day-menu')) return;
+        closeCalendarDayMenu();
+    }
+
+    function handleCalendarViewportChange() {
+        if (!isCalendarMode || !calendarMenuDate) return;
+        const dayButton = document.querySelector(`.calendar-day[data-calendar-date="${calendarMenuDate}"]`);
+        if (!dayButton) {
+            closeCalendarDayMenu();
+            return;
+        }
+        positionCalendarDayMenu(dayButton);
+    }
+
+    async function loadCalendarData() {
+        const firstMonth = getMonthStart(calendarStartMonth);
+        const secondMonth = addMonths(firstMonth, 1);
+        const rangeStart = formatIsoDate(firstMonth);
+        const rangeEnd = formatIsoDate(getMonthEnd(secondMonth));
+
+        if (calendarLoadedRange.start === rangeStart && calendarLoadedRange.end === rangeEnd) return;
+
+        const res = await apiFetch(`api/reports_by_date?start=${encodeURIComponent(rangeStart)}&end=${encodeURIComponent(rangeEnd)}&t=${Date.now()}`);
+        if (!res.ok) {
+            calendarReportsByDate = {};
+            calendarLoadedRange = { start: rangeStart, end: rangeEnd };
+            return;
+        }
+
+        const data = await res.json();
+        const grouped = {};
+        (data.items || []).forEach(raw => {
+            const dateIso = normalizeIsoDate(raw.report_date);
+            if (!dateIso) return;
+            if (!grouped[dateIso]) grouped[dateIso] = [];
+            grouped[dateIso].push({
+                id: raw.id,
+                report_date: dateIso,
+                license_plate: (raw.license_plate || '-').trim() || '-',
+                customer_name: ((raw.customer_name || '-').trim().split('\n')[0] || '-')
+            });
+        });
+        calendarReportsByDate = grouped;
+        calendarLoadedRange = { start: rangeStart, end: rangeEnd };
+    }
+
+    function getCalendarDayCountClass(count) {
+        if (count === 1) return 'has-reports-1';
+        if (count === 2) return 'has-reports-2';
+        if (count >= 3) return 'has-reports-3';
+        return '';
+    }
+
+    function getCalendarItemsForDate(dateIso) {
+        const entries = calendarReportsByDate[dateIso];
+        return Array.isArray(entries) ? entries : [];
+    }
+
+    function renderCalendarView() {
+        const container = document.getElementById('calendar-months');
+        if (!container) return;
+        const firstMonth = getMonthStart(calendarStartMonth);
+        const secondMonth = addMonths(firstMonth, 1);
+        container.innerHTML = '';
+        container.appendChild(buildCalendarMonthCard(firstMonth));
+        container.appendChild(buildCalendarMonthCard(secondMonth));
+
+        if (calendarMenuDate) {
+            const dayButton = document.querySelector(`.calendar-day[data-calendar-date="${calendarMenuDate}"]`);
+            if (dayButton) positionCalendarDayMenu(dayButton);
+            else closeCalendarDayMenu();
+        }
+    }
+
+    function buildCalendarMonthCard(monthDate) {
+        const year = monthDate.getFullYear();
+        const month = monthDate.getMonth();
+        const todayIso = formatIsoDate(new Date());
+        const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
+        const dayCount = new Date(year, month + 1, 0).getDate();
+
+        const card = document.createElement('div');
+        card.className = 'calendar-month-card';
+
+        const title = document.createElement('div');
+        title.className = 'calendar-month-title';
+        title.textContent = formatCalendarMonthLabel(monthDate);
+        card.appendChild(title);
+
+        const weekdays = document.createElement('div');
+        weekdays.className = 'calendar-weekdays';
+        CALENDAR_WEEKDAY_LABELS.forEach(label => {
+            const cell = document.createElement('div');
+            cell.textContent = label;
+            weekdays.appendChild(cell);
+        });
+        card.appendChild(weekdays);
+
+        const daysGrid = document.createElement('div');
+        daysGrid.className = 'calendar-days';
+
+        for (let i = 0; i < firstWeekday; i += 1) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'calendar-day-placeholder';
+            daysGrid.appendChild(placeholder);
+        }
+
+        for (let day = 1; day <= dayCount; day += 1) {
+            const dateObj = new Date(year, month, day);
+            const dateIso = formatIsoDate(dateObj);
+            const reports = getCalendarItemsForDate(dateIso);
+
+            const dayButton = document.createElement('button');
+            dayButton.type = 'button';
+            dayButton.className = 'calendar-day';
+            dayButton.dataset.calendarDate = dateIso;
+            const intensityClass = getCalendarDayCountClass(reports.length);
+            if (intensityClass) dayButton.classList.add(intensityClass);
+            if (dateIso === todayIso) dayButton.classList.add('today');
+            dayButton.title = reports.length > 0 ? `${reports.length} raporttia` : 'Ei raportteja';
+            dayButton.addEventListener('click', event => {
+                event.stopPropagation();
+                openCalendarDayMenu(dateIso, dayButton);
+            });
+
+            const number = document.createElement('span');
+            number.className = 'day-number';
+            number.textContent = String(day);
+            dayButton.appendChild(number);
+
+            if (reports.length > 0) {
+                const count = document.createElement('span');
+                count.className = 'day-count';
+                count.textContent = String(reports.length);
+                dayButton.appendChild(count);
+            }
+
+            daysGrid.appendChild(dayButton);
+        }
+
+        const usedCells = firstWeekday + dayCount;
+        const trailingCells = (7 - (usedCells % 7)) % 7;
+        for (let i = 0; i < trailingCells; i += 1) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'calendar-day-placeholder';
+            daysGrid.appendChild(placeholder);
+        }
+
+        card.appendChild(daysGrid);
+        return card;
+    }
+
+    function openCalendarDayMenu(dateIso, anchorEl) {
+        const menu = document.getElementById('calendar-day-menu');
+        const title = document.getElementById('calendar-day-menu-title');
+        const list = document.getElementById('calendar-day-menu-list');
+        if (!menu || !title || !list) return;
+
+        calendarMenuDate = dateIso;
+        title.textContent = formatCalendarDayLabel(dateIso);
+        list.innerHTML = '';
+
+        const reports = getCalendarItemsForDate(dateIso);
+        if (reports.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'calendar-day-menu-empty';
+            empty.textContent = 'Ei raportteja tälle päivälle.';
+            list.appendChild(empty);
+        } else {
+            reports.forEach(report => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'calendar-day-menu-item';
+                item.addEventListener('click', () => {
+                    closeCalendarDayMenu();
+                    openReport(report.id);
+                });
+
+                const plate = document.createElement('span');
+                plate.className = 'calendar-day-menu-plate';
+                plate.textContent = report.license_plate || '-';
+                item.appendChild(plate);
+
+                const customer = document.createElement('span');
+                customer.className = 'calendar-day-menu-customer';
+                customer.textContent = report.customer_name || '-';
+                item.appendChild(customer);
+
+                list.appendChild(item);
+            });
+        }
+
+        menu.classList.remove('hidden');
+        positionCalendarDayMenu(anchorEl);
+    }
+
+    function positionCalendarDayMenu(anchorEl) {
+        const menu = document.getElementById('calendar-day-menu');
+        if (!menu || !anchorEl || menu.classList.contains('hidden')) return;
+
+        const anchorRect = anchorEl.getBoundingClientRect();
+        menu.style.left = '10px';
+        menu.style.top = '10px';
+        const menuRect = menu.getBoundingClientRect();
+
+        let left = anchorRect.left;
+        let top = anchorRect.bottom + 8;
+
+        if (left + menuRect.width > window.innerWidth - 10) {
+            left = window.innerWidth - menuRect.width - 10;
+        }
+        if (left < 10) left = 10;
+
+        if (top + menuRect.height > window.innerHeight - 10) {
+            top = anchorRect.top - menuRect.height - 8;
+        }
+        if (top < 10) top = 10;
+
+        menu.style.left = `${Math.round(left)}px`;
+        menu.style.top = `${Math.round(top)}px`;
+    }
+
+    function closeCalendarDayMenu() {
+        const menu = document.getElementById('calendar-day-menu');
+        if (menu) menu.classList.add('hidden');
+        calendarMenuDate = '';
+    }
+
+    function createNewReportFromCalendarDay() {
+        const dateIso = normalizeIsoDate(calendarMenuDate);
+        if (!dateIso) return;
+        closeCalendarDayMenu();
+        createNewReport();
+        const editorView = document.getElementById('editor-view');
+        if (!(editorView && editorView.classList.contains('active'))) return;
+        withDirtyTrackingPaused(() => {
+            document.getElementById('report_date').value = dateIso;
+        });
+        markCurrentReportAsSaved();
+    }
+
     // --- Selection Mode Logic ---
     function toggleSelectionMode() {
+        if (isCalendarMode) return;
         isSelectionMode = !isSelectionMode;
         const dash = document.getElementById('dashboard-view');
         const btn = document.getElementById('btn-select-mode');
@@ -2585,6 +3290,7 @@
             const data = await res.json();
             if(data.status === 'deleted') {
                 toggleSelectionMode(); // Exit mode
+                invalidateCalendarCache();
                 loadReports(); // Refresh
             } else {
                 alert('Virhe poistossa');
@@ -2631,6 +3337,8 @@
     }
 
     function handleSearch() {
+        updateSearchClearButton();
+        if (isCalendarMode) return;
         clearTimeout(searchTimeout);
         const val = document.getElementById('search-input').value;
         // Don't search if only 1 char
@@ -2642,12 +3350,41 @@
         }, 300);
     }
 
+    function updateSearchClearButton() {
+        const input = document.getElementById('search-input');
+        const btn = document.getElementById('search-clear-btn');
+        if (!input || !btn) return;
+        btn.classList.toggle('hidden', !input.value.trim());
+    }
+
+    function clearSearch() {
+        const input = document.getElementById('search-input');
+        if (!input) return;
+        input.value = '';
+        updateSearchClearButton();
+        currentPage = 1;
+        invalidateCalendarCache();
+        loadReports();
+        input.focus();
+    }
+
     function changePage(delta) {
+        if (isCalendarMode) return;
         currentPage += delta;
         loadReports();
     }
 
     async function loadReports() {
+        if (isCalendarMode) {
+            await loadCalendarData();
+            renderCalendarView();
+            return;
+        }
+        closeCalendarDayMenu();
+        await loadReportList();
+    }
+
+    async function loadReportList() {
         const q = document.getElementById('search-input').value;
         const res = await apiFetch(`api/reports?q=${encodeURIComponent(q)}&page=${currentPage}&limit=${itemsPerPage}&t=` + Date.now());
         const data = await res.json();
@@ -4096,6 +4833,7 @@
         const result = await res.json();
         if (result.status === 'created' || result.status === 'updated') {
             document.getElementById('report-id').value = result.id;
+            invalidateCalendarCache();
             markCurrentReportAsSaved();
             if(!silent) alert('Raportti tallennettu!');
             return true;

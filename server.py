@@ -141,30 +141,185 @@ def init_db():
     c.execute("SELECT value FROM config WHERE key='maintenance_items'")
     if not c.fetchone():
         default_items = {
+            "schema_version": 2,
             "groups": [
                 {
+                    "id": "group_dfdf234e-7872-456f-be64-9e9cede7244c",
                     "title": "Tehdyt huoltotyöt",
-                    "items": ["Moottoriöljyn vaihto", "Öljynsuodattimen vaihto", "Vaihteistoöljyn vaihto", "Polttoainesuodattimen vaihto", "Jarrunesteen vaihto", "Sytytystulppien vaihto", "Moottorin ilmansuodattimen vaihto", "Raitisilmansuodattimen vaihto", "Apulaitehihnan vaihto", "Saranoiden rasvaus"]
+                    "items": [
+                        {
+                            "id": "item_c0e87515-bb88-433e-a2ad-7e459ce9b1f2",
+                            "label": "Moottoriöljyn vaihto",
+                            "subitems": [
+                                "0W-30",
+                                "0W-40",
+                                "5W-30",
+                                "5W-40",
+                                "10W-40",
+                                "15W-40"
+                            ]
+                        },
+                        {
+                            "id": "item_b3209975-4d41-4651-9c33-7e7a8187fcd3",
+                            "label": "Öljynsuodattimen vaihto"
+                        },
+                        {
+                            "id": "item_b8f08f5d-ad0b-4b25-91d8-79dcf41c1673",
+                            "label": "Vaihteistoöljyn vaihto",
+                            "subitems": [
+                                "75W-80",
+                                "75W-85",
+                                "75W-90",
+                                "75W-140",
+                                "80W-90"
+                            ]
+                        },
+                        {
+                            "id": "item_2f814705-4379-4196-8abe-a8e1fe0c99f0",
+                            "label": "Polttoainesuodattimen vaihto"
+                        },
+                        {
+                            "id": "item_14665c07-c89d-4530-a2c8-91ed5be51759",
+                            "label": "Jarrunesteen vaihto",
+                            "subitems": [
+                                "DOT 4",
+                                "DOT 5.1"
+                            ]
+                        },
+                        {
+                            "id": "item_aa8159e8-2f7b-461b-b4d2-61a6acf9e586",
+                            "label": "Sytytystulppien vaihto"
+                        },
+                        {
+                            "id": "item_db81c50a-957d-4614-9067-83f99c1a542a",
+                            "label": "Moottorin ilmansuodattimen vaihto"
+                        },
+                        {
+                            "id": "item_ac20f43b-9287-4ba1-af7b-d81f74827916",
+                            "label": "Raitisilmansuodattimen vaihto",
+                            "subitems": [
+                                "Aktiivihiili",
+                                "Tarvikelaatu",
+                                "Alkuperäislaatu"
+                            ]
+                        },
+                        {
+                            "id": "item_a22bf85c-6f05-4d76-84b7-89371a963dc8",
+                            "label": "Apulaitehihnan vaihto"
+                        },
+                        {
+                            "id": "item_06372f53-9541-4c6c-ae66-bd4296493a7d",
+                            "label": "Saranoiden rasvaus"
+                        }
+                    ]
                 },
                 {
+                    "id": "group_eb0505f2-f1a0-4d2f-8000-eb9613db5ce1",
                     "title": "JARRUJÄRJESTELMÄ",
-                    "items": ["Jarrupalojen kulutuspinnan tarkastus", "Jarrulevyn kunnon tarkastus", "Käsijarrun toiminnan tarkastus", "Jarruletkujen ja -putkien tarkastus"]
+                    "items": [
+                        {
+                            "id": "item_87a1c06e-84a6-4f3a-92d1-8a196e7e3421",
+                            "label": "Jarrupalojen kulutuspinnan tarkastus"
+                        },
+                        {
+                            "id": "item_c8d01e59-45a6-43cc-b7ac-30313a343df2",
+                            "label": "Jarrulevyn kunnon tarkastus"
+                        },
+                        {
+                            "id": "item_b3e0d100-ca9b-4f81-b30a-ab676cce6a2c",
+                            "label": "Käsijarrun toiminnan tarkastus"
+                        },
+                        {
+                            "id": "item_c2fde5cb-feb6-4b55-83a3-48c57f56f224",
+                            "label": "Jarruletkujen ja -putkien tarkastus"
+                        }
+                    ]
                 },
                 {
+                    "id": "group_5765522b-fb19-4e38-a9aa-9122cbe3bf78",
                     "title": "NESTEET",
-                    "items": ["Öljyjen ja nesteiden määrän tarkastus", "Tuulilasinpesunesteen tarkastus ja täyttö", "Ohjaustehostinnesteen tarkastus", "Jäähdytysnesteen tarkastus"]
+                    "items": [
+                        {
+                            "id": "item_29eae5e6-be60-4c6e-b711-e65283dc3326",
+                            "label": "Öljyjen ja nesteiden määrän tarkastus"
+                        },
+                        {
+                            "id": "item_7eecf4e0-954c-41b6-8a4b-f6636ad7c177",
+                            "label": "Tuulilasinpesunesteen tarkastus ja täyttö",
+                            "subitems": [
+                                "-25°C",
+                                "-18°C",
+                                "-10°C",
+                                "Kesälaatu"
+                            ]
+                        },
+                        {
+                            "id": "item_5358a2ed-1642-4d68-833d-f650d3e7411e",
+                            "label": "Ohjaustehostinnesteen tarkastus"
+                        },
+                        {
+                            "id": "item_e88bcd60-e325-4a8d-80df-c25b193c8270",
+                            "label": "Jäähdytysnesteen tarkastus"
+                        }
+                    ]
                 },
                 {
+                    "id": "group_d7b66a4e-4af4-4ee1-a112-c26fab53be73",
                     "title": "RENKAAT JA PYÖRÄT",
-                    "items": ["Renkaiden kunnon tarkastus", "Renkaiden ilmanpaineen tarkistus", "Vararenkaan kunnon tarkastus"]
+                    "items": [
+                        {
+                            "id": "item_3ec52c95-2e94-42b9-9ddf-ce519f573267",
+                            "label": "Renkaiden kunnon tarkastus"
+                        },
+                        {
+                            "id": "item_84dd7768-900e-4d6b-829b-8d78c283fff0",
+                            "label": "Renkaiden ilmanpaineen tarkistus"
+                        },
+                        {
+                            "id": "item_3749b1b5-491a-476b-b5b1-568c0d939a80",
+                            "label": "Vararenkaan kunnon tarkastus"
+                        }
+                    ]
                 },
                 {
+                    "id": "group_1a1eb362-0ca7-42c9-b47b-8ce21dceb731",
                     "title": "VALOT JA SÄHKÖLAITTEET",
-                    "items": ["Ulkovalojen tarkastus", "Sisävalojen tarkastus", "Akun kunnon tarkistus", "Laturin ja hihnan tarkastus"]
+                    "items": [
+                        {
+                            "id": "item_6d241fc9-81ba-45f8-a8cf-69a22a4ea2fe",
+                            "label": "Ulkovalojen tarkastus"
+                        },
+                        {
+                            "id": "item_f595e72d-acd7-48ca-98e6-10c55d02bbc5",
+                            "label": "Sisävalojen tarkastus"
+                        },
+                        {
+                            "id": "item_530c829d-bcc6-4a47-bce4-923ecaa2532d",
+                            "label": "Akun kunnon tarkistus"
+                        },
+                        {
+                            "id": "item_b2c9e95d-2601-4938-808b-070d3e013894",
+                            "label": "Laturin ja hihnan tarkastus"
+                        }
+                    ]
                 },
                 {
+                    "id": "group_68cb8201-f0d1-4a83-9e10-b49cafa04e66",
                     "title": "ALUSTA JA JOUSITUS",
-                    "items": ["Iskunvaimentimien ja jousituksen tarkastus", "Ohjauslaitteiston tarkastus", "Vetokoukun ja pohjan tarkastus"]
+                    "items": [
+                        {
+                            "id": "item_d1d49ff1-ccc6-4278-b7f4-a14a62b085d5",
+                            "label": "Iskunvaimentimien ja jousituksen tarkastus"
+                        },
+                        {
+                            "id": "item_2a6fc917-12f8-4e1a-ad6a-1d196791bb33",
+                            "label": "Ohjauslaitteiston tarkastus"
+                        },
+                        {
+                            "id": "item_d4447a16-839e-4e19-a4ec-150b3f4d2298",
+                            "label": "Vetokoukun ja pohjan tarkastus"
+                        }
+                    ]
                 }
             ]
         }
@@ -352,7 +507,12 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
 
                     if search_q:
                         wildcard = f"%{search_q}%"
-                        sql_base += " AND (customer_name LIKE ? OR license_plate LIKE ? OR vin LIKE ? OR data LIKE ?)"
+                        sql_base += """ AND (
+                            customer_name LIKE ?
+                            OR REPLACE(UPPER(license_plate), '-', '') LIKE REPLACE(UPPER(?), '-', '')
+                            OR vin LIKE ?
+                            OR COALESCE(json_extract(data, '$.vehicle_model'), '') LIKE ?
+                        )"""
                         params = [wildcard, wildcard, wildcard, wildcard]
                     
                     # Get Total Count
@@ -372,6 +532,39 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                         'page': page,
                         'limit': limit,
                         'pages': math.ceil(total_count / limit)
+                    }
+                
+                elif path == '/api/reports_by_date':
+                    start_date = (query.get('start', [''])[0] or '').strip()
+                    end_date = (query.get('end', [''])[0] or '').strip()
+
+                    try:
+                        if start_date:
+                            datetime.strptime(start_date, '%Y-%m-%d')
+                        if end_date:
+                            datetime.strptime(end_date, '%Y-%m-%d')
+                    except ValueError:
+                        start_date = ''
+                        end_date = ''
+
+                    if start_date and end_date:
+                        if start_date > end_date:
+                            start_date, end_date = end_date, start_date
+                        c.execute(
+                            '''SELECT id, customer_name, license_plate, report_date, created_at
+                               FROM reports
+                               WHERE report_date >= ? AND report_date <= ?
+                               ORDER BY report_date ASC, created_at DESC, id DESC''',
+                            (start_date, end_date)
+                        )
+                        rows = c.fetchall()
+                    else:
+                        rows = []
+
+                    response_data = {
+                        'items': [dict(row) for row in rows],
+                        'start': start_date,
+                        'end': end_date
                     }
 
                 elif path == '/api/report':
