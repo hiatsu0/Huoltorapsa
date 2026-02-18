@@ -81,6 +81,15 @@
         .nav-buttons button.primary:hover {
             filter: brightness(90%);
         }
+        .nav-buttons button.report-save-btn.unsaved {
+            background-color: #d9534f;
+            color: #fff;
+            border-color: #d9534f;
+        }
+        .nav-buttons button.report-save-btn.unsaved:hover {
+            filter: brightness(90%);
+            background-color: #d9534f;
+        }
 
         .nav-buttons button.danger {
             background-color: #dc3545;
@@ -649,11 +658,11 @@
 
             .print-header-content {
                 display: flex; justify-content: space-between;
-                border-bottom: 2px solid #009eb8; padding-bottom: 10px; margin-bottom: 10px;
+                border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-bottom: 10px;
             }
             .print-left-col { width: 60%; }
             .print-title { 
-                font-size: 20px; font-weight: bold; color: #009eb8; 
+                font-size: 20px; font-weight: bold; color: var(--primary-color); 
                 text-transform: uppercase; margin-bottom: 10px; 
             }
             .print-company-row { display: flex; align-items: flex-start; gap: 15px; }
@@ -678,7 +687,7 @@
 
             .print-section-title {
                 background: #eee; font-weight: bold; padding: 4px 8px;
-                margin-top: 10px; border-left: 4px solid #009eb8;
+                margin-top: 10px; border-left: 4px solid var(--primary-color);
                 font-size: 11px; text-transform: uppercase;
                 page-break-after: avoid;
             }
@@ -792,7 +801,7 @@
     <!-- EDITOR VIEW -->
     <div id="editor-view" class="view">
         <div class="nav-buttons" style="margin-bottom: 20px; text-align: right;">
-            <button onclick="saveReport()"><i class="fas fa-save"></i> Tallenna</button>
+            <button class="report-save-btn" onclick="saveReport()"><i class="fas fa-save"></i> Tallenna</button>
             <button class="primary" onclick="preparePrint()"><i class="fas fa-print"></i> Tulosta</button>
         </div>
 
@@ -894,7 +903,7 @@
             </div>
 
             <div class="nav-buttons" style="margin-top: 20px; text-align: right;">
-                <button type="button" onclick="saveReport()"><i class="fas fa-save"></i> Tallenna</button>
+                <button type="button" class="report-save-btn" onclick="saveReport()"><i class="fas fa-save"></i> Tallenna</button>
                 <button type="button" class="primary" onclick="preparePrint()"><i class="fas fa-print"></i> Tulosta</button>
             </div>
         </form>
@@ -914,6 +923,10 @@
                     <input type="file" accept="image/*" onchange="uploadLogo(this)">
                     <img id="conf_logo_preview" src="" class="logo-preview" style="display:none">
                     <button id="btn_delete_logo" onclick="deleteLogo()" style="margin-top:5px; display:none; padding:5px 10px; background:#ddd; border:none; border-radius:4px; cursor:pointer;">Poista logo</button>
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="conf_accent_color">Korostusväri</label>
+                    <input type="color" id="conf_accent_color" class="form-control" style="max-width: 140px; padding: 6px; height: 44px;">
                 </div>
                 <hr style="border:0; border-top:1px solid #eee; margin: 20px 0;">
                 <div class="form-group">
@@ -1035,6 +1048,7 @@
         'not_done': 'Ei tehty',
         'na': 'Ei sisälly'
     };
+    const DEFAULT_ACCENT_COLOR = '#009eb8';
     const STATIC_LOGO_ID = 'company_logo';
 
     let currentConfig = { maintenance_items: {}, shop_settings: {} };
@@ -1049,6 +1063,9 @@
     let currentReportMaintenance = { schema_version: MAINTENANCE_SCHEMA_VERSION, groups: [], legacy_items: [] };
     let currentReportHasSettingsMismatch = false;
     let currentReportLoadedFromLegacyFormat = false;
+    let isReportDirty = false;
+    let reportDirtyTrackingPaused = false;
+    let lastSavedReportSnapshot = '';
 
     function nextId(prefix) {
         const hasCryptoUuid = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function';
@@ -1062,6 +1079,99 @@
 
     function normalizeStatus(status) {
         return Object.prototype.hasOwnProperty.call(statusTexts, status) ? status : 'na';
+    }
+
+    function normalizeAccentColor(color) {
+        const value = (typeof color === 'string') ? color.trim() : '';
+        return /^#[0-9a-fA-F]{6}$/.test(value) ? value.toLowerCase() : DEFAULT_ACCENT_COLOR;
+    }
+
+    function applyAccentColor(color) {
+        document.documentElement.style.setProperty('--primary-color', normalizeAccentColor(color));
+    }
+
+    function setReportDirty(nextValue) {
+        isReportDirty = !!nextValue;
+        document.querySelectorAll('.report-save-btn').forEach(btn => {
+            btn.classList.toggle('unsaved', isReportDirty);
+        });
+    }
+
+    function withDirtyTrackingPaused(fn) {
+        const prev = reportDirtyTrackingPaused;
+        reportDirtyTrackingPaused = true;
+        try {
+            return fn();
+        } finally {
+            reportDirtyTrackingPaused = prev;
+        }
+    }
+
+    function buildReportPayloadFromEditor() {
+        const maintenanceV2 = collectMaintenanceV2ForSave();
+        currentReportMaintenance = maintenanceV2;
+        return {
+            id: document.getElementById('report-id').value,
+            customer_name: document.getElementById('customer_name').value,
+            report_date: document.getElementById('report_date').value,
+            license_plate: document.getElementById('license_plate').value,
+            vin: document.getElementById('vin').value,
+            vehicle_model: document.getElementById('vehicle_model').value,
+            engine_code: document.getElementById('engine_code').value,
+            registered_date: document.getElementById('registered_date').value,
+            mileage: document.getElementById('mileage').value,
+            additional_notes: document.getElementById('additional_notes').value,
+            mechanic_signature: document.getElementById('mechanic_signature').value,
+            maintenance_schema_version: MAINTENANCE_SCHEMA_VERSION,
+            maintenance_v2: maintenanceV2,
+            items: flattenMaintenanceItems(maintenanceV2),
+            attachments: [...currentAttachments]
+        };
+    }
+
+    function getCurrentReportSnapshot() {
+        return JSON.stringify(buildReportPayloadFromEditor());
+    }
+
+    function markCurrentReportAsSaved() {
+        lastSavedReportSnapshot = getCurrentReportSnapshot();
+        setReportDirty(false);
+    }
+
+    function evaluateReportDirtyState() {
+        if (reportDirtyTrackingPaused) return;
+        if (!lastSavedReportSnapshot) {
+            setReportDirty(false);
+            return;
+        }
+        setReportDirty(getCurrentReportSnapshot() !== lastSavedReportSnapshot);
+    }
+
+    function isEditorViewActive() {
+        const editorView = document.getElementById('editor-view');
+        return !!editorView && editorView.classList.contains('active');
+    }
+
+    function confirmDiscardUnsavedReportChanges(targetLabel) {
+        if (!isEditorViewActive() || !isReportDirty) return true;
+        const ok = confirm(`Raportissa on tallentamattomia muutoksia. Siirrytäänkö näkymään "${targetLabel}" ilman tallennusta?`);
+        if (ok) {
+            markCurrentReportAsSaved();
+        }
+        return ok;
+    }
+
+    function initReportDirtyTracking() {
+        const form = document.getElementById('report-form');
+        if (form) {
+            form.addEventListener('input', evaluateReportDirtyState);
+            form.addEventListener('change', evaluateReportDirtyState);
+        }
+        window.addEventListener('beforeunload', event => {
+            if (!isReportDirty) return;
+            event.preventDefault();
+            event.returnValue = '';
+        });
     }
 
     function escapeHtml(value) {
@@ -1342,12 +1452,14 @@
     // --- Initialization ---
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('report_date').valueAsDate = new Date();
+        initReportDirtyTracking();
         loadConfig();
         loadReports();
     });
 
     // --- Navigation & Views ---
     function showDashboard() {
+        if (!confirmDiscardUnsavedReportChanges('Raportit')) return;
         switchView('dashboard-view');
         // If coming back to dashboard, refresh to see changes (e.g. date)
         loadReports();
@@ -1362,25 +1474,37 @@
         }
     }
 
-    function createNewReport() {
-        document.getElementById('report-form').reset();
-        document.getElementById('report-id').value = '';
-        document.getElementById('report_date').valueAsDate = new Date();
-        initializeNewReportMaintenance();
-        renderMaintenanceSections();
+    function createNewReport(options = {}) {
+        const opts = options && typeof options === 'object' ? options : {};
+        const skipUnsavedPrompt = !!opts.skipUnsavedPrompt;
+        const skipBaseline = !!opts.skipBaseline;
 
-        currentAttachments = [];
-        renderAttachmentList();
+        if (!skipUnsavedPrompt && !confirmDiscardUnsavedReportChanges('Uusi raportti')) return;
 
+        withDirtyTrackingPaused(() => {
+            document.getElementById('report-form').reset();
+            document.getElementById('report-id').value = '';
+            document.getElementById('report_date').valueAsDate = new Date();
+            initializeNewReportMaintenance();
+            renderMaintenanceSections();
+            currentAttachments = [];
+            renderAttachmentList();
+        });
+
+        if (!skipBaseline) {
+            markCurrentReportAsSaved();
+        }
         switchView('editor-view');
     }
 
     function showConfig() {
+        if (!confirmDiscardUnsavedReportChanges('Asetukset')) return;
         switchView('config-view');
         initConfigEditor(currentConfig.maintenance_items);
         const settings = currentConfig.shop_settings || {};
         document.getElementById('conf_company_text').value = settings.company_text || '';
         document.getElementById('conf_hide_na').checked = !!settings.hide_na_in_print;
+        document.getElementById('conf_accent_color').value = normalizeAccentColor(settings.accent_color);
         
         const preview = document.getElementById('conf_logo_preview');
         const delBtn = document.getElementById('btn_delete_logo');
@@ -1450,7 +1574,12 @@
         const data = await res.json();
         const normalizedMaintenance = normalizeMaintenanceConfig(data.maintenance_items || {});
         currentConfig.maintenance_items = normalizedMaintenance.value;
-        currentConfig.shop_settings = data.shop_settings || {};
+        const loadedSettings = data.shop_settings || {};
+        currentConfig.shop_settings = {
+            ...loadedSettings,
+            accent_color: normalizeAccentColor(loadedSettings.accent_color)
+        };
+        applyAccentColor(currentConfig.shop_settings.accent_color);
         if (normalizedMaintenance.changed) {
             try {
                 await fetch('api/save_config', {
@@ -1619,6 +1748,7 @@
             );
             list.appendChild(img);
         });
+        evaluateReportDirtyState();
     }
 
     function addLongPressHandler(element, onClick, onLongPress) {
@@ -2057,6 +2187,7 @@
         currentReportMaintenance.legacy_items = legacyItems.filter(item => item.id !== legacyId);
         renderMaintenanceSections();
         restoreStatusesByItemId(statuses);
+        evaluateReportDirtyState();
     }
 
     function mapLegacyItemToCurrent(legacyId, targetItemId) {
@@ -2147,6 +2278,7 @@
         currentReportHasSettingsMismatch = false;
         currentReportLoadedFromLegacyFormat = false;
         renderMaintenanceSections();
+        evaluateReportDirtyState();
         alert('Raportin toimenpidemalli päivitettiin nykyisiin asetuksiin. Tarkista "Poistuneet huoltotoimenpiteet" ja sovita tarvittavat vastineet.');
     }
 
@@ -2320,6 +2452,7 @@
             opt.classList.remove('selected');
             if (opt.dataset.value === normalized) opt.classList.add('selected');
         });
+        evaluateReportDirtyState();
     }
 
     async function lookupVehicle() {
@@ -2328,37 +2461,26 @@
         const res = await fetch(`api/lookup_vehicle?plate=${encodeURIComponent(plate)}`);
         const data = await res.json();
         if (data.vin) {
+            let changed = false;
             ['vin', 'vehicle_model', 'engine_code', 'registered_date'].forEach(f => {
-                if(!document.getElementById(f).value) document.getElementById(f).value = data[f] || '';
+                const input = document.getElementById(f);
+                if(!input.value) {
+                    input.value = data[f] || '';
+                    changed = true;
+                }
             });
+            if (changed) evaluateReportDirtyState();
         }
     }
 
     async function saveReport(silent = false) {
-        const maintenanceV2 = collectMaintenanceV2ForSave();
-        currentReportMaintenance = maintenanceV2;
-        const report = {
-            id: document.getElementById('report-id').value,
-            customer_name: document.getElementById('customer_name').value,
-            report_date: document.getElementById('report_date').value,
-            license_plate: document.getElementById('license_plate').value,
-            vin: document.getElementById('vin').value,
-            vehicle_model: document.getElementById('vehicle_model').value,
-            engine_code: document.getElementById('engine_code').value,
-            registered_date: document.getElementById('registered_date').value,
-            mileage: document.getElementById('mileage').value,
-            additional_notes: document.getElementById('additional_notes').value,
-            mechanic_signature: document.getElementById('mechanic_signature').value,
-            maintenance_schema_version: MAINTENANCE_SCHEMA_VERSION,
-            maintenance_v2: maintenanceV2,
-            items: flattenMaintenanceItems(maintenanceV2),
-            attachments: currentAttachments
-        };
+        const report = buildReportPayloadFromEditor();
 
         const res = await fetch('api/save_report', { method: 'POST', body: JSON.stringify(report) });
         const result = await res.json();
         if (result.status === 'created' || result.status === 'updated') {
             document.getElementById('report-id').value = result.id;
+            markCurrentReportAsSaved();
             if(!silent) alert('Raportti tallennettu!');
             return true;
         } else {
@@ -2370,25 +2492,25 @@
     async function openReport(id) {
         const res = await fetch(`api/report?id=${id}`);
         const data = await res.json();
-        createNewReport();
-
-        document.getElementById('report-id').value = data.id;
-        document.getElementById('customer_name').value = data.customer_name || '';
-        document.getElementById('report_date').value = data.report_date || '';
-        document.getElementById('license_plate').value = data.license_plate || '';
-        document.getElementById('vin').value = data.vin || '';
-        document.getElementById('vehicle_model').value = data.vehicle_model || '';
-        document.getElementById('engine_code').value = data.engine_code || '';
-        document.getElementById('registered_date').value = data.registered_date || '';
-        document.getElementById('mileage').value = data.mileage || '';
-        document.getElementById('additional_notes').value = data.additional_notes || '';
-        document.getElementById('mechanic_signature').value = data.mechanic_signature || '';
-        
-        currentAttachments = data.attachments || [];
-        renderAttachmentList();
-
-        readMaintenanceForCurrentReport(data);
-        renderMaintenanceSections();
+        withDirtyTrackingPaused(() => {
+            createNewReport({ skipUnsavedPrompt: true, skipBaseline: true });
+            document.getElementById('report-id').value = data.id;
+            document.getElementById('customer_name').value = data.customer_name || '';
+            document.getElementById('report_date').value = data.report_date || '';
+            document.getElementById('license_plate').value = data.license_plate || '';
+            document.getElementById('vin').value = data.vin || '';
+            document.getElementById('vehicle_model').value = data.vehicle_model || '';
+            document.getElementById('engine_code').value = data.engine_code || '';
+            document.getElementById('registered_date').value = data.registered_date || '';
+            document.getElementById('mileage').value = data.mileage || '';
+            document.getElementById('additional_notes').value = data.additional_notes || '';
+            document.getElementById('mechanic_signature').value = data.mechanic_signature || '';
+            currentAttachments = data.attachments || [];
+            renderAttachmentList();
+            readMaintenanceForCurrentReport(data);
+            renderMaintenanceSections();
+        });
+        markCurrentReportAsSaved();
         switchView('editor-view');
     }
 	
@@ -2402,8 +2524,10 @@
         const maintenanceItems = getMaintenanceItemsFromEditor();
         const shopSettings = {
             company_text: document.getElementById('conf_company_text').value,
-            hide_na_in_print: document.getElementById('conf_hide_na').checked
+            hide_na_in_print: document.getElementById('conf_hide_na').checked,
+            accent_color: normalizeAccentColor(document.getElementById('conf_accent_color').value)
         };
+        applyAccentColor(shopSettings.accent_color);
         await fetch('api/save_config', {
             method: 'POST',
             body: JSON.stringify({ maintenance_items: maintenanceItems, shop_settings: shopSettings })

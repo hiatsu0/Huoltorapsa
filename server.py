@@ -70,7 +70,8 @@ def init_db():
     if not c.fetchone():
         default_settings = {
             "company_text": "Autokorjaamo Oy\nKorjaamokuja 1\n00100 Helsinki\nY-tunnus: 123456-7",
-            "hide_na_in_print": False
+            "hide_na_in_print": False,
+            "accent_color": "#009eb8"
         }
         c.execute("INSERT INTO config (key, value) VALUES (?, ?)", ('shop_settings', json.dumps(default_settings)))
     
