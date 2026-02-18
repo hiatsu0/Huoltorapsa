@@ -4240,29 +4240,29 @@
             }
         });
 
-        const legacyForPrint = (maintenanceV2.legacy_items || []).filter(item => !hideNa || normalizeStatus(item.status) !== 'na');
-        if (legacyForPrint.length > 0) {
-            const rows = legacyForPrint.map(item => {
-                const status = normalizeStatus(item.status);
-                return `<tr class="${status === 'na' ? 'row-na' : ''}"><td class="print-item-name">${escapeHtml(item.label)} (Poistunut huoltotoimenpide)</td><td class="print-item-status status-${status}">${statusTexts[status]}</td></tr>`;
-            }).join('');
-            pContainer.innerHTML += `<div class="print-section-title">Poistuneet huoltotoimenpiteet</div><table class="print-items-table"><tbody>${rows}</tbody></table>`;
-        }
+        // Legacy/removed items are intentionally not printed.
         // Attachments
         const pAttContainer = document.getElementById('p_attachments');
         pAttContainer.innerHTML = '';
         const attWrapper = document.getElementById('p_attachments_container');
+        const attachmentLoadPromises = [];
         
         if (currentAttachments.length > 0) {
             attWrapper.style.display = 'block';
             currentAttachments.forEach(uuid => {
                 const img = document.createElement('img');
-                img.src = 'api/attachment?id=' + uuid;
+                const loadPromise = new Promise(resolve => {
+                    img.onload = () => resolve();
+                    img.onerror = () => resolve();
+                });
+                img.src = `api/attachment?id=${encodeURIComponent(uuid)}&t=${Date.now()}`;
                 pAttContainer.appendChild(img);
+                attachmentLoadPromises.push(loadPromise);
             });
         } else {
             attWrapper.style.display = 'none';
         }
+        await Promise.all(attachmentLoadPromises);
 
         // --- Page Break Optimizer ---
         // Temporarily display print view to measure content height
