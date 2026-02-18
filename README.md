@@ -57,7 +57,7 @@ Sovelluksen Asetukset-näkymässä voit:
 ## 🛠️ Tekninen toteutus
 
 - Frontend: HTML5, CSS3, Vanilla JavaScript (ei vaadi node.js-ympäristöä).
-- Backend: Python (Standard Library http.server).
+- Backend: Python (Standard Library http.server). **Vain sisäverkkoon, ei julkiseen internetiin!**
 - Tietokanta: SQLite3 (sisäänrakennettu, ei vaadi erillistä palvelinta).
 
 ## 📄 Lisenssi
