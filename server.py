@@ -30,6 +30,7 @@ auth_sessions = {}
 auth_sessions_lock = threading.Lock()
 auth_login_failures = {}
 auth_login_failures_lock = threading.Lock()
+PLATE_SQL_EXPR = "REPLACE(REPLACE(REPLACE(UPPER(COALESCE(license_plate, '')), '-', ''), ' ', ''), '.', '')"
 
 def read_config_value(key):
     conn = sqlite3.connect(DB_FILE)
@@ -120,6 +121,19 @@ def reset_auth_failures(client_id):
     with auth_login_failures_lock:
         if client_id in auth_login_failures:
             del auth_login_failures[client_id]
+
+def normalize_plate_lookup(value):
+    return ''.join(ch for ch in str(value or '').upper() if ch.isalnum())
+
+def normalize_single_line_text(value):
+    return ' '.join(str(value or '').split())
+
+def parse_report_data_blob(raw_data):
+    try:
+        parsed = json.loads(raw_data) if raw_data else {}
+        return parsed if isinstance(parsed, dict) else {}
+    except Exception:
+        return {}
 
 def init_db():
     # Main DB
@@ -535,6 +549,85 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                         'limit': limit,
                         'pages': math.ceil(total_count / limit)
                     }
+
+                elif path == '/api/report_suggestions':
+                    field = (query.get('field', [''])[0] or '').strip().lower()
+                    raw_q = query.get('q', [''])[0]
+                    normalized_q = normalize_single_line_text(raw_q)
+                    try:
+                        limit = int(query.get('limit', [8])[0])
+                    except (TypeError, ValueError):
+                        limit = 8
+                    limit = max(1, min(limit, 20))
+
+                    if len(normalized_q) < 2:
+                        response_data = {'items': []}
+                    elif field == 'customer':
+                        terms = [term for term in normalized_q.split(' ') if term]
+                        sql_base = "FROM reports WHERE 1=1"
+                        params = []
+                        for term in terms:
+                            sql_base += " AND REPLACE(REPLACE(customer_name, char(10), ' '), char(13), ' ') LIKE ?"
+                            params.append(f"%{term}%")
+                        c.execute(
+                            f'''SELECT customer_name, license_plate, report_date
+                                {sql_base}
+                                ORDER BY created_at DESC, id DESC
+                                LIMIT ?''',
+                            (*params, max(limit * 6, limit))
+                        )
+                        rows = c.fetchall()
+                        seen_customers = set()
+                        items = []
+                        for row in rows:
+                            customer_name = row['customer_name'] or ''
+                            customer_key = normalize_single_line_text(customer_name).casefold()
+                            if not customer_key or customer_key in seen_customers:
+                                continue
+                            seen_customers.add(customer_key)
+                            items.append({
+                                'customer_name': customer_name,
+                                'license_plate': row['license_plate'] or '',
+                                'report_date': row['report_date'] or ''
+                            })
+                            if len(items) >= limit:
+                                break
+                        response_data = {'items': items}
+                    elif field in ('plate', 'license_plate'):
+                        plate_key = normalize_plate_lookup(normalized_q)
+                        if len(plate_key) < 2:
+                            response_data = {'items': []}
+                        else:
+                            wildcard = f"%{plate_key}%"
+                            c.execute(
+                                f'''SELECT customer_name, license_plate, report_date, data
+                                    FROM reports
+                                    WHERE {PLATE_SQL_EXPR} LIKE ?
+                                    ORDER BY created_at DESC, id DESC
+                                    LIMIT ?''',
+                                (wildcard, max(limit * 8, limit))
+                            )
+                            rows = c.fetchall()
+                            seen_plates = set()
+                            items = []
+                            for row in rows:
+                                license_plate = row['license_plate'] or ''
+                                normalized_plate = normalize_plate_lookup(license_plate)
+                                if not normalized_plate or normalized_plate in seen_plates:
+                                    continue
+                                seen_plates.add(normalized_plate)
+                                payload = parse_report_data_blob(row['data'])
+                                items.append({
+                                    'license_plate': license_plate,
+                                    'customer_name': row['customer_name'] or '',
+                                    'report_date': row['report_date'] or '',
+                                    'mileage': str(payload.get('mileage', '') or '').strip()
+                                })
+                                if len(items) >= limit:
+                                    break
+                            response_data = {'items': items}
+                    else:
+                        response_data = {'items': []}
                 
                 elif path == '/api/reports_by_date':
                     start_date = (query.get('start', [''])[0] or '').strip()
@@ -583,16 +676,25 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                 
                 elif path == '/api/lookup_vehicle':
                     plate = query.get('plate', [''])[0]
-                    if plate:
-                        c.execute("SELECT vin, data FROM reports WHERE license_plate LIKE ? ORDER BY created_at DESC LIMIT 1", (plate,))
+                    plate_key = normalize_plate_lookup(plate)
+                    if plate_key:
+                        c.execute(
+                            f'''SELECT vin, data
+                                FROM reports
+                                WHERE {PLATE_SQL_EXPR} = ?
+                                ORDER BY COALESCE(report_date, '') DESC, created_at DESC, id DESC
+                                LIMIT 1''',
+                            (plate_key,)
+                        )
                         row = c.fetchone()
                         if row:
-                            full_data = json.loads(row['data'])
+                            full_data = parse_report_data_blob(row['data'])
                             response_data = {
                                 'vin': row['vin'],
                                 'vehicle_model': full_data.get('vehicle_model', ''),
                                 'engine_code': full_data.get('engine_code', ''),
-                                'registered_date': full_data.get('registered_date', '')
+                                'registered_date': full_data.get('registered_date', ''),
+                                'previous_mileage': str(full_data.get('mileage', '') or '').strip()
                             }
 
                 self.send_json(200, response_data)

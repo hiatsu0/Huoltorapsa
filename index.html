@@ -593,6 +593,14 @@
             overflow: hidden;
             border: 1px solid #eee;
         }
+        #editor-view .document-section {
+            position: relative;
+            overflow: visible;
+            z-index: 1;
+        }
+        #editor-view .document-section:focus-within {
+            z-index: 40;
+        }
 
         .document-section-header {
             background-color: var(--primary-color);
@@ -666,6 +674,70 @@
             min-height: 60px;
         }
 
+        .field-suggest-wrap {
+            position: relative;
+        }
+        .field-suggestion-menu {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            z-index: 120;
+            border: 1px solid color-mix(in srgb, var(--primary-color) 32%, #cfd8df);
+            border-radius: 6px;
+            background: color-mix(in srgb, var(--primary-color) 10%, #fff);
+            box-shadow: 0 6px 16px color-mix(in srgb, var(--primary-color) 14%, rgba(0, 0, 0, 0.18));
+            max-height: 220px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .field-suggestion-menu.hidden {
+            display: none;
+        }
+        .field-suggestion-item {
+            width: 100%;
+            border: 0;
+            border-bottom: 1px solid color-mix(in srgb, var(--primary-color) 18%, #dfe7ec);
+            background: color-mix(in srgb, var(--primary-color) 5%, #fff);
+            text-align: left;
+            padding: 8px 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .field-suggestion-item:last-child {
+            border-bottom: 0;
+        }
+        .field-suggestion-item:hover,
+        .field-suggestion-item.active {
+            background: color-mix(in srgb, var(--primary-color) 18%, #fff);
+        }
+        .field-suggestion-primary {
+            font-size: 14px;
+            color: #2e2e2e;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .field-suggestion-secondary {
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .field-suggestion-empty {
+            font-size: 13px;
+            color: #777;
+            padding: 9px 10px;
+        }
+        #mileage.has-reference-mileage::placeholder {
+            color: #7a8794;
+            font-style: italic;
+        }
+
         /* Traffic Light Selector */
         .maintenance-item {
             margin-bottom: 20px;
@@ -733,8 +805,8 @@
         }
         .maintenance-subitem-btn.selected {
             border-color: var(--primary-color);
-            background: #e8f6fa;
-            color: #0f5e6e;
+            background: color-mix(in srgb, var(--primary-color) 18%, #fff);
+            color: color-mix(in srgb, var(--primary-color) 70%, #1b252d);
         }
         .maintenance-note-row {
             margin-top: 8px;
@@ -1190,8 +1262,8 @@
         }
         .maintenance-set-entry-subitem.selected {
             border-color: var(--primary-color);
-            background: #e8f6fa;
-            color: #0f5e6e;
+            background: color-mix(in srgb, var(--primary-color) 18%, #fff);
+            color: color-mix(in srgb, var(--primary-color) 70%, #1b252d);
         }
         .maintenance-set-entry-meta {
             margin-top: 6px;
@@ -1330,6 +1402,16 @@
             color: #ccc;
             margin-top: 10px;
             padding-bottom: 10px;
+        }
+        .app-footer-stealth-link,
+        .app-footer-stealth-link:visited,
+        .app-footer-stealth-link:hover,
+        .app-footer-stealth-link:active {
+            color: inherit;
+            text-decoration: none;
+        }
+        .app-footer-stealth-link {
+            cursor: default;
         }
 
         /* --- PRINT STYLES --- */
@@ -1547,7 +1629,7 @@
             <button class="primary" onclick="preparePrint()"><i class="fas fa-print"></i> Tulosta</button>
         </div>
 
-        <form id="report-form">
+        <form id="report-form" autocomplete="off">
             <input type="hidden" id="report-id">
             
             <!-- Company & Customer -->
@@ -1557,7 +1639,10 @@
                     <div class="form-row general-info-row">
                         <div class="form-group">
                             <label>Asiakas</label>
-                            <textarea class="form-control" id="customer_name" rows="4" placeholder="Asiakkaan nimi ja osoite..."></textarea>
+                            <div class="field-suggest-wrap">
+                                <textarea class="form-control" id="customer_name" rows="4" placeholder="Asiakkaan nimi ja osoite..." autocomplete="off" spellcheck="false"></textarea>
+                                <div id="customer-name-suggestions" class="field-suggestion-menu hidden"></div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Huoltopäivä</label>
@@ -1578,7 +1663,10 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Rekisterinumero</label>
-                            <input type="text" class="form-control" id="license_plate" onblur="lookupVehicle()">
+                            <div class="field-suggest-wrap">
+                                <input type="text" class="form-control" id="license_plate" onblur="lookupVehicle()" autocomplete="off" autocapitalize="characters" spellcheck="false">
+                                <div id="license-plate-suggestions" class="field-suggestion-menu hidden"></div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Valmistenumero (VIN)</label>
@@ -1690,8 +1778,9 @@
                 </div>
                 <div style="margin-top:15px">
                     <input type="checkbox" id="conf_hide_na">
-                    <label for="conf_hide_na">Piilota "Ei sisälly" -kohdat tulosteesta oletuksena</label>
+                    <label for="conf_hide_na">Piilota "Ei sisälly" -kohdat tulosteista</label>
                 </div>
+                <p class="config-help" style="margin-top: 12px; margin-bottom: 0;">Tulostusvinkki: Kytke selaimen tulostusikkunan lisäasetuksista päälle kohta "Taustakuvat", jotta tiettyjen osioiden taustavärit näkyvät tulosteessa.</p>
             </div>
         </div>
 
@@ -1764,7 +1853,7 @@
 </div>
 
 <!-- Footer (Outside Container) -->
-<div class="app-footer">v1.2 | Makkesoft 2026 | AGPLv3</div>
+<div class="app-footer"><a class="app-footer-stealth-link" href="https://github.com/hiatsu0/Huoltorapsa/" target="_blank" rel="noopener noreferrer">v1.2</a> | Makkesoft 2026 | AGPLv3</div>
 
 <!-- Image Modal -->
 <div id="image-modal" class="modal-overlay" onclick="closeImageModal()">
@@ -1902,6 +1991,10 @@
     let calendarLoadedRange = { start: '', end: '' };
     let calendarMenuDate = '';
     let reportDateSortDirection = '';
+    const editorSuggestionState = {
+        customer: { timerId: null, requestSerial: 0, activeIndex: -1, items: [] },
+        plate: { timerId: null, requestSerial: 0, activeIndex: -1, items: [] }
+    };
 
     function showAuthDialog() {
         const overlay = document.getElementById('auth-overlay');
@@ -2349,6 +2442,282 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
+    }
+
+    function normalizePlateLookupKey(value) {
+        return String(value || '')
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, '');
+    }
+
+    function normalizeSuggestionQuery(value) {
+        return String(value || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function compactSingleLine(value) {
+        return String(value || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function truncateSuggestionText(value, maxLength = 34) {
+        if (value.length <= maxLength) return value;
+        return `${value.slice(0, Math.max(0, maxLength - 3)).trimEnd()}...`;
+    }
+
+    function formatSuggestionDate(value) {
+        const iso = normalizeIsoDate(value);
+        if (!iso) return '';
+        return iso;
+    }
+
+    function setMileageReference(value) {
+        const input = document.getElementById('mileage');
+        if (!input) return;
+        const normalized = String(value || '').trim();
+        if (normalized) {
+            input.dataset.referenceMileage = normalized;
+        } else {
+            delete input.dataset.referenceMileage;
+        }
+        updateMileageReferenceHint();
+    }
+
+    function clearMileageReference() {
+        setMileageReference('');
+    }
+
+    function updateMileageReferenceHint() {
+        const input = document.getElementById('mileage');
+        if (!input) return;
+        const reference = input.dataset.referenceMileage || '';
+        const showHint = !!reference && !String(input.value || '').trim();
+        input.classList.toggle('has-reference-mileage', showHint);
+        input.placeholder = showHint ? `Edell. ${reference}` : '';
+    }
+
+    function getEditorSuggestionInput(kind) {
+        if (kind === 'customer') return document.getElementById('customer_name');
+        if (kind === 'plate') return document.getElementById('license_plate');
+        return null;
+    }
+
+    function getEditorSuggestionMenu(kind) {
+        if (kind === 'customer') return document.getElementById('customer-name-suggestions');
+        if (kind === 'plate') return document.getElementById('license-plate-suggestions');
+        return null;
+    }
+
+    function closeEditorSuggestionMenu(kind) {
+        const state = editorSuggestionState[kind];
+        const menu = getEditorSuggestionMenu(kind);
+        if (!state || !menu) return;
+        clearTimeout(state.timerId);
+        state.requestSerial += 1;
+        state.activeIndex = -1;
+        state.items = [];
+        menu.innerHTML = '';
+        menu.classList.add('hidden');
+    }
+
+    function closeAllEditorSuggestionMenus() {
+        closeEditorSuggestionMenu('customer');
+        closeEditorSuggestionMenu('plate');
+    }
+
+    function updateEditorSuggestionActiveItem(kind) {
+        const menu = getEditorSuggestionMenu(kind);
+        const state = editorSuggestionState[kind];
+        if (!menu || !state) return;
+        menu.querySelectorAll('.field-suggestion-item').forEach((el, index) => {
+            el.classList.toggle('active', index === state.activeIndex);
+        });
+    }
+
+    function renderEditorSuggestionMenu(kind) {
+        const state = editorSuggestionState[kind];
+        const menu = getEditorSuggestionMenu(kind);
+        if (!state || !menu) return;
+
+        menu.innerHTML = '';
+        if (state.items.length === 0) {
+            menu.classList.add('hidden');
+            return;
+        }
+
+        state.items.forEach((item, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'field-suggestion-item';
+            button.addEventListener('mousedown', event => {
+                event.preventDefault();
+                applyEditorSuggestion(kind, item);
+            });
+            button.addEventListener('mouseenter', () => {
+                state.activeIndex = index;
+                updateEditorSuggestionActiveItem(kind);
+            });
+
+            const primary = document.createElement('span');
+            primary.className = 'field-suggestion-primary';
+            primary.textContent = item.display || item.value || '-';
+            button.appendChild(primary);
+
+            const details = [item.plate, item.customer_preview, formatSuggestionDate(item.report_date)].filter(Boolean);
+            if (details.length > 0) {
+                const secondary = document.createElement('span');
+                secondary.className = 'field-suggestion-secondary';
+                secondary.textContent = details.join(' | ');
+                button.appendChild(secondary);
+            }
+
+            menu.appendChild(button);
+        });
+
+        menu.classList.remove('hidden');
+        updateEditorSuggestionActiveItem(kind);
+    }
+
+    function normalizeSuggestionResponseItem(kind, item) {
+        const source = (item && typeof item === 'object') ? item : {};
+        if (kind === 'customer') {
+            const customerRaw = String(source.customer_name || source.value || '').trim();
+            const compact = compactSingleLine(customerRaw);
+            return {
+                value: customerRaw,
+                display: truncateSuggestionText(compact),
+                plate: String(source.license_plate || '').trim(),
+                report_date: String(source.report_date || '').trim()
+            };
+        }
+        const plateRaw = String(source.license_plate || source.value || '').trim().toUpperCase();
+        const customerCompact = compactSingleLine(source.customer_name || '');
+        return {
+            value: plateRaw,
+            display: plateRaw,
+            plate: '',
+            customer_preview: truncateSuggestionText(customerCompact),
+            report_date: String(source.report_date || '').trim()
+        };
+    }
+
+    function applyEditorSuggestion(kind, item) {
+        const input = getEditorSuggestionInput(kind);
+        if (!input || !item) return;
+
+        if (kind === 'customer') {
+            input.value = item.value || '';
+            closeEditorSuggestionMenu('customer');
+            evaluateReportDirtyState();
+            return;
+        }
+
+        input.value = item.value || '';
+        closeEditorSuggestionMenu('plate');
+        lookupVehicle();
+        evaluateReportDirtyState();
+    }
+
+    async function fetchEditorSuggestions(kind, queryValue) {
+        const state = editorSuggestionState[kind];
+        const menu = getEditorSuggestionMenu(kind);
+        if (!state || !menu) return;
+
+        const query = normalizeSuggestionQuery(queryValue);
+        if (query.length < 2) {
+            closeEditorSuggestionMenu(kind);
+            return;
+        }
+
+        const serial = ++state.requestSerial;
+        const field = (kind === 'plate') ? 'plate' : 'customer';
+        const res = await apiFetch(`api/report_suggestions?field=${encodeURIComponent(field)}&q=${encodeURIComponent(query)}&limit=8&t=${Date.now()}`);
+        const data = await res.json();
+        if (serial !== state.requestSerial) return;
+
+        const items = Array.isArray(data.items) ? data.items : [];
+        state.items = items.map(item => normalizeSuggestionResponseItem(kind, item)).filter(item => (item.value || '').length > 0);
+        state.activeIndex = state.items.length > 0 ? 0 : -1;
+        renderEditorSuggestionMenu(kind);
+    }
+
+    function scheduleEditorSuggestionFetch(kind) {
+        const state = editorSuggestionState[kind];
+        const input = getEditorSuggestionInput(kind);
+        if (!state || !input) return;
+        clearTimeout(state.timerId);
+        state.timerId = setTimeout(() => {
+            fetchEditorSuggestions(kind, input.value).catch(error => {
+                console.warn('Suggestion fetch failed', error);
+                closeEditorSuggestionMenu(kind);
+            });
+        }, 220);
+    }
+
+    function handleEditorSuggestionInput(kind) {
+        if (kind === 'plate') {
+            clearMileageReference();
+        }
+        scheduleEditorSuggestionFetch(kind);
+    }
+
+    function handleEditorSuggestionKeydown(kind, event) {
+        const state = editorSuggestionState[kind];
+        const menu = getEditorSuggestionMenu(kind);
+        if (!state || !menu || menu.classList.contains('hidden')) return;
+        if (state.items.length === 0) return;
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            state.activeIndex = (state.activeIndex + 1) % state.items.length;
+            updateEditorSuggestionActiveItem(kind);
+            return;
+        }
+        if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            state.activeIndex = (state.activeIndex - 1 + state.items.length) % state.items.length;
+            updateEditorSuggestionActiveItem(kind);
+            return;
+        }
+        if (event.key === 'Enter' && kind === 'plate') {
+            event.preventDefault();
+            applyEditorSuggestion(kind, state.items[state.activeIndex] || state.items[0]);
+            return;
+        }
+        if (event.key === 'Escape') {
+            closeEditorSuggestionMenu(kind);
+        }
+    }
+
+    function handleEditorSuggestionBlur(kind) {
+        setTimeout(() => {
+            const menu = getEditorSuggestionMenu(kind);
+            const input = getEditorSuggestionInput(kind);
+            if (!menu || !input) return;
+            if (menu.contains(document.activeElement)) return;
+            closeEditorSuggestionMenu(kind);
+        }, 120);
+    }
+
+    function handleEditorSuggestionOutsideClick(event) {
+        if (event.target.closest('#customer_name')) return;
+        if (event.target.closest('#license_plate')) return;
+        if (event.target.closest('#customer-name-suggestions')) return;
+        if (event.target.closest('#license-plate-suggestions')) return;
+        closeAllEditorSuggestionMenus();
+    }
+
+    function initEditorSuggestions() {
+        ['customer', 'plate'].forEach(kind => {
+            const input = getEditorSuggestionInput(kind);
+            if (!input) return;
+            input.addEventListener('input', () => handleEditorSuggestionInput(kind));
+            input.addEventListener('keydown', event => handleEditorSuggestionKeydown(kind, event));
+            input.addEventListener('blur', () => handleEditorSuggestionBlur(kind));
+            input.addEventListener('focus', () => {
+                const query = normalizeSuggestionQuery(input.value);
+                if (query.length >= 2) scheduleEditorSuggestionFetch(kind);
+            });
+        });
+        document.addEventListener('click', handleEditorSuggestionOutsideClick);
     }
 
     function normalizeSubitems(rawSubitems) {
@@ -2849,11 +3218,20 @@
         }
         document.addEventListener('keydown', handleGlobalShortcuts);
         document.addEventListener('keydown', event => {
-            if (event.key === 'Escape') closeCalendarDayMenu();
+            if (event.key === 'Escape') {
+                closeCalendarDayMenu();
+                closeAllEditorSuggestionMenus();
+            }
         });
         document.addEventListener('click', handleCalendarOutsideClick);
         window.addEventListener('resize', handleCalendarViewportChange);
         window.addEventListener('scroll', handleCalendarViewportChange, true);
+        const mileageInput = document.getElementById('mileage');
+        if (mileageInput) {
+            mileageInput.addEventListener('input', updateMileageReferenceHint);
+            mileageInput.addEventListener('change', updateMileageReferenceHint);
+        }
+        initEditorSuggestions();
         initReportDirtyTracking();
         initConfigDirtyTracking();
         loadConfig();
@@ -2877,6 +3255,7 @@
     function switchView(viewId) {
         document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
         document.getElementById(viewId).classList.add('active');
+        closeAllEditorSuggestionMenus();
         // Reset selection mode when leaving dashboard
         if(viewId !== 'dashboard-view' && isSelectionMode) {
             toggleSelectionMode(); 
@@ -2898,6 +3277,7 @@
             document.getElementById('report-form').reset();
             document.getElementById('report-id').value = '';
             document.getElementById('report_date').valueAsDate = new Date();
+            clearMileageReference();
             initializeNewReportMaintenance();
             renderMaintenanceSections();
             currentAttachments = [];
@@ -4795,6 +5175,10 @@
                         chip.setAttribute('aria-pressed', selectedSet.has(subitem) ? 'true' : 'false');
                         chip.title = 'Valitse tulostettava lisatieto';
                         chip.addEventListener('click', () => {
+                            const currentStatus = normalizeStatus(hiddenInput.value);
+                            if (currentStatus === 'na') {
+                                selectStatus(itemDomId, 'done');
+                            }
                             const isSelected = chip.classList.toggle('selected');
                             chip.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
                             evaluateReportDirtyState();
@@ -4860,21 +5244,28 @@
     }
 
     async function lookupVehicle() {
-        const plate = document.getElementById('license_plate').value;
-        if (plate.length < 2) return;
+        const plateInput = document.getElementById('license_plate');
+        const plate = plateInput ? plateInput.value : '';
+        if (normalizePlateLookupKey(plate).length < 2) {
+            clearMileageReference();
+            return;
+        }
         const res = await apiFetch(`api/lookup_vehicle?plate=${encodeURIComponent(plate)}`);
         const data = await res.json();
-        if (data.vin) {
+        const hasLookupData = ['vin', 'vehicle_model', 'engine_code', 'registered_date'].some(key => String(data[key] || '').trim().length > 0);
+        if (hasLookupData) {
             let changed = false;
             ['vin', 'vehicle_model', 'engine_code', 'registered_date'].forEach(f => {
                 const input = document.getElementById(f);
-                if(!input.value) {
+                if (!input) return;
+                if (!input.value) {
                     input.value = data[f] || '';
                     changed = true;
                 }
             });
             if (changed) evaluateReportDirtyState();
         }
+        setMileageReference(data.previous_mileage || '');
     }
 
     async function saveReport(silent = false) {
@@ -4909,6 +5300,8 @@
             document.getElementById('engine_code').value = data.engine_code || '';
             document.getElementById('registered_date').value = data.registered_date || '';
             document.getElementById('mileage').value = data.mileage || '';
+            clearMileageReference();
+            updateMileageReferenceHint();
             document.getElementById('additional_notes').value = data.additional_notes || '';
             document.getElementById('mechanic_signature').value = data.mechanic_signature || '';
             currentAttachments = data.attachments || [];
