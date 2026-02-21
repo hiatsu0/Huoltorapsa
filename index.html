@@ -2062,6 +2062,7 @@
         localVersion: '',
         remoteVersion: ''
     };
+    let maintenanceRestartPollTimer = null;
     const editorSuggestionState = {
         customer: { timerId: null, requestSerial: 0, activeIndex: -1, items: [] },
         plate: { timerId: null, requestSerial: 0, activeIndex: -1, items: [] }
@@ -2278,14 +2279,18 @@
         setMaintenanceUpdateStatus('Ladataan päivitystä...', '');
         try {
             const branchPart = maintenanceUpdateState.branch ? `&branch=${encodeURIComponent(maintenanceUpdateState.branch)}` : '';
-            const res = await apiFetch(`api/maintenance_update?action=apply${branchPart}&t=${Date.now()}`);
+            const res = await apiFetch(`api/maintenance_update?action=apply${branchPart}&restart=1&t=${Date.now()}`);
             const data = await res.json();
             if (!res.ok) {
                 throw new Error(data && data.error ? data.error : 'Päivityksen asennus epäonnistui.');
             }
             maintenanceUpdateState.updateAvailable = false;
             renderMaintenanceUpdateControls();
-            setMaintenanceUpdateStatus(data.message || 'Päivitys asennettu. Käynnistä sovellus uudelleen.', 'success');
+            setMaintenanceUpdateStatus(data.message || 'Päivitys asennettu. Käynnistä palvelinsovellus uudelleen!', 'success');
+            if (data && data.restart_scheduled) {
+                setMaintenanceUpdateStatus('Päivitys asennettu. Palvelin käynnistetään uudelleen, odota hetki...', 'success');
+                beginMaintenanceRestartPolling();
+            }
         } catch (error) {
             renderMaintenanceUpdateControls();
             setMaintenanceUpdateStatus(`Virhe: ${error.message || 'päivitystä ei voitu asentaa.'}`, 'error');
@@ -2310,6 +2315,37 @@
         document.body.appendChild(link);
         link.click();
         link.remove();
+    }
+
+    function stopMaintenanceRestartPolling() {
+        if (maintenanceRestartPollTimer) {
+            clearTimeout(maintenanceRestartPollTimer);
+            maintenanceRestartPollTimer = null;
+        }
+    }
+
+    function beginMaintenanceRestartPolling() {
+        stopMaintenanceRestartPolling();
+        const startedAt = Date.now();
+        const pollOnce = async () => {
+            const elapsed = Date.now() - startedAt;
+            if (elapsed > 120000) {
+                setMaintenanceUpdateStatus('Uudelleenkäynnistyksen tunnistus aikakatkaistiin. Päivitä sivu manuaalisesti.', 'error');
+                stopMaintenanceRestartPolling();
+                return;
+            }
+            try {
+                const res = await fetch(`api/auth_status?t=${Date.now()}`, { cache: 'no-store' });
+                if (res.ok) {
+                    const next = new URL(window.location.href);
+                    next.searchParams.set('t', String(Date.now()));
+                    window.location.replace(next.toString());
+                    return;
+                }
+            } catch (e) {}
+            maintenanceRestartPollTimer = setTimeout(pollOnce, 1500);
+        };
+        maintenanceRestartPollTimer = setTimeout(pollOnce, 1200);
     }
 
     function nextId(prefix) {

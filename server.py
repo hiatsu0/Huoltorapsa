@@ -15,6 +15,8 @@ import secrets
 import time
 import re
 import tempfile
+import subprocess
+import sys
 from datetime import datetime
 import socket
 import webbrowser
@@ -40,6 +42,10 @@ UPDATE_REPO_NAME = "Huoltorapsa"
 UPDATE_REPO_BRANCHES = ("main", "master")
 APP_VERSION_RE = re.compile(r"APP_VERSION:\s*([^\s<>]+)")
 APP_VERSION_NUM_RE = re.compile(r"^v?(\d+(?:\.\d+)*)$", re.IGNORECASE)
+RESTART_HELPER_FILENAME = "restart_helper.py"
+SERVER_INSTANCE = None
+restart_state_lock = threading.Lock()
+restart_pending = False
 
 def read_config_value(key):
     conn = sqlite3.connect(DB_FILE)
@@ -302,6 +308,62 @@ def apply_remote_update(preferred_branch=""):
         "branch": branch,
         "applied_version": applied_version
     }
+
+def get_restart_helper_path():
+    return os.path.join(get_app_root_dir(), RESTART_HELPER_FILENAME)
+
+def spawn_restart_helper_once():
+    global restart_pending
+    with restart_state_lock:
+        if restart_pending:
+            return True, ""
+        restart_pending = True
+
+    helper_path = get_restart_helper_path()
+    if not os.path.exists(helper_path):
+        with restart_state_lock:
+            restart_pending = False
+        return False, f"{RESTART_HELPER_FILENAME} puuttuu."
+
+    script_path = os.path.join(get_app_root_dir(), "server.py")
+    cmd = [
+        sys.executable,
+        helper_path,
+        "--pid", str(os.getpid()),
+        "--python", sys.executable,
+        "--script", script_path,
+        "--cwd", get_app_root_dir()
+    ]
+    try:
+        kwargs = {
+            "cwd": get_app_root_dir(),
+            "stdin": subprocess.DEVNULL,
+            "stdout": subprocess.DEVNULL,
+            "stderr": subprocess.DEVNULL,
+            "close_fds": True
+        }
+        if os.name == "nt":
+            flags = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+            kwargs["creationflags"] = flags
+        else:
+            kwargs["start_new_session"] = True
+        subprocess.Popen(cmd, **kwargs)
+        return True, ""
+    except Exception as e:
+        with restart_state_lock:
+            restart_pending = False
+        return False, str(e)
+
+def request_server_shutdown(delay_seconds=0.6):
+    def _shutdown():
+        time.sleep(max(0.0, float(delay_seconds)))
+        server = SERVER_INSTANCE
+        if server:
+            try:
+                server.shutdown()
+            except Exception:
+                pass
+    threading.Thread(target=_shutdown, daemon=True).start()
 
 def init_db():
     # Main DB
@@ -935,6 +997,8 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
     def handle_maintenance_update(self, query):
         action = (query.get('action', ['check'])[0] or 'check').strip().lower()
         preferred_branch = (query.get('branch', [''])[0] or '').strip()
+        restart_flag_raw = (query.get('restart', ['1'])[0] or '1').strip().lower()
+        auto_restart = restart_flag_raw not in ('0', 'false', 'no')
 
         try:
             if action == 'check':
@@ -955,12 +1019,26 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                     return
 
                 result = apply_remote_update(preferred_branch=check_result.get('branch', preferred_branch))
+                restart_scheduled = False
+                restart_error = ''
+                if auto_restart:
+                    restart_scheduled, restart_error = spawn_restart_helper_once()
+                message = f"Päivitys asennettu versioon {result['applied_version']}."
+                if restart_scheduled:
+                    message += " Palvelin käynnistetään uudelleen automaattisesti."
+                elif auto_restart:
+                    message += f" Automaattinen uudelleenkäynnistys epäonnistui ({restart_error}). Käynnistä sovellus uudelleen."
+                else:
+                    message += " Käynnistä sovellus uudelleen."
                 self.send_json(200, {
                     'status': 'updated',
                     'applied_version': result['applied_version'],
                     'branch': result['branch'],
-                    'message': f"Päivitys asennettu versioon {result['applied_version']}. Käynnistä sovellus uudelleen."
+                    'restart_scheduled': restart_scheduled,
+                    'message': message
                 })
+                if restart_scheduled:
+                    request_server_shutdown(0.7)
                 return
 
             self.send_json(400, {'error': 'unsupported_action'})
@@ -1184,13 +1262,15 @@ if __name__ == "__main__":
         print(" ")
         print("Toimintaloki ilmestyy alle:")
 
-        # Avaa selain automaattisesti 1.5 sekunnin kuluttua
-        def open_browser():
-            webbrowser.open(f'http://localhost:{PORT}/')
-        
-        threading.Timer(1.5, open_browser).start()
+        # Avaa selain automaattisesti 1.5 sekunnin kuluttua (ei automaattirestartin jälkeen)
+        if os.environ.get("HUOLTORAPSA_NO_BROWSER") != "1":
+            def open_browser():
+                webbrowser.open(f'http://localhost:{PORT}/')
+            threading.Timer(1.5, open_browser).start()
 
+        socketserver.TCPServer.allow_reuse_address = True
         with socketserver.TCPServer(("", PORT), MaintenanceRequestHandler) as httpd:
+            SERVER_INSTANCE = httpd
             httpd.serve_forever()
 
     except Exception as e:
