@@ -4,6 +4,8 @@ import sqlite3
 import json
 import os
 import urllib.parse
+import urllib.request
+import urllib.error
 import uuid
 import base64
 import math
@@ -11,6 +13,8 @@ import hmac
 import hashlib
 import secrets
 import time
+import re
+import tempfile
 from datetime import datetime
 import socket
 import webbrowser
@@ -31,6 +35,11 @@ auth_sessions_lock = threading.Lock()
 auth_login_failures = {}
 auth_login_failures_lock = threading.Lock()
 PLATE_SQL_EXPR = "REPLACE(REPLACE(REPLACE(UPPER(COALESCE(license_plate, '')), '-', ''), ' ', ''), '.', '')"
+UPDATE_REPO_OWNER = "hiatsu0"
+UPDATE_REPO_NAME = "Huoltorapsa"
+UPDATE_REPO_BRANCHES = ("main", "master")
+APP_VERSION_RE = re.compile(r"APP_VERSION:\s*([^\s<>]+)")
+APP_VERSION_NUM_RE = re.compile(r"^v?(\d+(?:\.\d+)*)$", re.IGNORECASE)
 
 def read_config_value(key):
     conn = sqlite3.connect(DB_FILE)
@@ -134,6 +143,165 @@ def parse_report_data_blob(raw_data):
         return parsed if isinstance(parsed, dict) else {}
     except Exception:
         return {}
+
+def get_app_root_dir():
+    return os.path.dirname(os.path.abspath(__file__))
+
+def get_index_file_path():
+    return os.path.join(get_app_root_dir(), "index.html")
+
+def extract_app_version_from_html(html_text):
+    if not isinstance(html_text, str):
+        return ""
+    match = APP_VERSION_RE.search(html_text)
+    return match.group(1).strip() if match else ""
+
+def parse_version_tuple(version_text):
+    value = (version_text or "").strip()
+    if not value:
+        return None
+    match = APP_VERSION_NUM_RE.match(value)
+    if not match:
+        return None
+    try:
+        return tuple(int(part) for part in match.group(1).split("."))
+    except ValueError:
+        return None
+
+def compare_version_tuples(left, right):
+    left_tuple = tuple(left or ())
+    right_tuple = tuple(right or ())
+    max_len = max(len(left_tuple), len(right_tuple))
+    padded_left = left_tuple + (0,) * (max_len - len(left_tuple))
+    padded_right = right_tuple + (0,) * (max_len - len(right_tuple))
+    if padded_left < padded_right:
+        return -1
+    if padded_left > padded_right:
+        return 1
+    return 0
+
+def load_local_index_info():
+    index_path = get_index_file_path()
+    with open(index_path, "r", encoding="utf-8") as f:
+        html_text = f.read()
+    return {
+        "path": index_path,
+        "html": html_text,
+        "version": extract_app_version_from_html(html_text)
+    }
+
+def fetch_repo_file_bytes(file_path, branch, timeout_seconds=10):
+    safe_path = str(file_path).lstrip("/")
+    url = f"https://raw.githubusercontent.com/{UPDATE_REPO_OWNER}/{UPDATE_REPO_NAME}/{branch}/{safe_path}"
+    request = urllib.request.Request(url, headers={"User-Agent": "Huoltorapsa-Updater/1.0"})
+    with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+        return response.read()
+
+def fetch_remote_index_info(preferred_branch=""):
+    branches = []
+    if preferred_branch:
+        branches.append(preferred_branch)
+    branches.extend([branch for branch in UPDATE_REPO_BRANCHES if branch not in branches])
+
+    last_error = ""
+    for branch in branches:
+        try:
+            data = fetch_repo_file_bytes("index.html", branch)
+            text = data.decode("utf-8")
+            version = extract_app_version_from_html(text)
+            return {"branch": branch, "html_bytes": data, "version": version}
+        except Exception as e:
+            last_error = str(e)
+            continue
+    raise RuntimeError(last_error or "Remote index.html fetch failed")
+
+def write_file_bytes_atomic(target_path, payload):
+    dir_path = os.path.dirname(os.path.abspath(target_path))
+    fd, temp_path = tempfile.mkstemp(prefix=".update_", dir=dir_path)
+    try:
+        with os.fdopen(fd, "wb") as tmp:
+            tmp.write(payload)
+        os.replace(temp_path, target_path)
+    finally:
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+
+def check_for_remote_update(preferred_branch=""):
+    local_info = load_local_index_info()
+    remote_info = fetch_remote_index_info(preferred_branch=preferred_branch)
+    local_version_raw = (local_info.get("version") or "").strip()
+    remote_version_raw = (remote_info.get("version") or "").strip()
+    local_version = local_version_raw or "tuntematon"
+    remote_version = remote_version_raw or "tuntematon"
+    result = {
+        "update_available": False,
+        "local_version": local_version,
+        "remote_version": remote_version,
+        "branch": remote_info["branch"],
+        "status_tone": "",
+        "status_message": ""
+    }
+
+    if not remote_version_raw:
+        result["status_tone"] = "error"
+        result["status_message"] = "Päivitys estetty: etäversion tunnus puuttuu (APP_VERSION)."
+        result["reason"] = "remote_version_missing"
+        return result
+
+    local_tuple = parse_version_tuple(local_version_raw)
+    remote_tuple = parse_version_tuple(remote_version_raw)
+
+    if local_tuple is None:
+        result["status_tone"] = "error"
+        result["status_message"] = "Päivitys estetty: nykyistä versiota ei voitu tulkita."
+        result["reason"] = "local_version_unparseable"
+        return result
+    if remote_tuple is None:
+        result["status_tone"] = "error"
+        result["status_message"] = "Päivitys estetty: etäversion muoto ei ole tuettu."
+        result["reason"] = "remote_version_unparseable"
+        return result
+
+    cmp_result = compare_version_tuples(remote_tuple, local_tuple)
+    if cmp_result > 0:
+        result["update_available"] = True
+        result["status_tone"] = "success"
+        result["status_message"] = f"Päivitys saatavilla ({local_version} -> {remote_version})."
+        result["reason"] = "remote_newer"
+        return result
+    if cmp_result == 0:
+        result["status_message"] = f"Sovellus on ajan tasalla ({local_version})."
+        result["reason"] = "up_to_date"
+        return result
+
+    result["status_tone"] = "error"
+    result["status_message"] = f"Päivitys estetty: etäversio ({remote_version}) on vanhempi kuin nykyinen ({local_version})."
+    result["reason"] = "remote_older"
+    return result
+
+def apply_remote_update(preferred_branch=""):
+    check_result = check_for_remote_update(preferred_branch=preferred_branch)
+    if not check_result.get("update_available"):
+        raise RuntimeError(check_result.get("status_message") or "Päivitys ei ole sallittu.")
+
+    branch = check_result["branch"]
+    remote_info = fetch_remote_index_info(preferred_branch=branch)
+    server_bytes = fetch_repo_file_bytes("server.py", branch)
+
+    index_target = get_index_file_path()
+    server_target = os.path.join(get_app_root_dir(), "server.py")
+
+    write_file_bytes_atomic(index_target, remote_info["html_bytes"])
+    write_file_bytes_atomic(server_target, server_bytes)
+
+    applied_version = remote_info["version"] or "tuntematon"
+    return {
+        "branch": branch,
+        "applied_version": applied_version
+    }
 
 def init_db():
     # Main DB
@@ -492,6 +660,12 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
             if path == '/api/attachment':
                 self.serve_attachment(query)
                 return
+            if path == '/api/download_backup':
+                self.serve_maintenance_backup()
+                return
+            if path == '/api/maintenance_update':
+                self.handle_maintenance_update(query)
+                return
 
             conn = sqlite3.connect(DB_FILE)
             conn.row_factory = sqlite3.Row
@@ -730,6 +904,69 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
         except Exception as e:
             print(f"Attachment Error: {e}")
             self.send_error(500)
+
+    def serve_maintenance_backup(self):
+        db_path = os.path.join(get_app_root_dir(), DB_FILE)
+        if not os.path.exists(db_path):
+            self.send_json(404, {'error': 'maintenance.db not found'})
+            return
+
+        backup_name = f"maintenance-backup-{datetime.now().strftime('%Y%m%d-%H%M%S')}.db"
+        try:
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/octet-stream')
+            self.send_header('Content-Disposition', f'attachment; filename=\"{backup_name}\"')
+            self.send_header('Content-Length', str(os.path.getsize(db_path)))
+            self.end_headers()
+
+            with open(db_path, 'rb') as src:
+                while True:
+                    chunk = src.read(64 * 1024)
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+        except Exception as e:
+            print(f"Backup download error: {e}")
+            try:
+                self.send_json(500, {'error': str(e)})
+            except Exception:
+                pass
+
+    def handle_maintenance_update(self, query):
+        action = (query.get('action', ['check'])[0] or 'check').strip().lower()
+        preferred_branch = (query.get('branch', [''])[0] or '').strip()
+
+        try:
+            if action == 'check':
+                result = check_for_remote_update(preferred_branch=preferred_branch)
+                self.send_json(200, result)
+                return
+
+            if action == 'apply':
+                check_result = check_for_remote_update(preferred_branch=preferred_branch)
+                if not check_result.get('update_available'):
+                    self.send_json(409, {
+                        'error': check_result.get('status_message') or 'Päivitys ei ole saatavilla.',
+                        'reason': check_result.get('reason', ''),
+                        'local_version': check_result.get('local_version', ''),
+                        'remote_version': check_result.get('remote_version', ''),
+                        'branch': check_result.get('branch', '')
+                    })
+                    return
+
+                result = apply_remote_update(preferred_branch=check_result.get('branch', preferred_branch))
+                self.send_json(200, {
+                    'status': 'updated',
+                    'applied_version': result['applied_version'],
+                    'branch': result['branch'],
+                    'message': f"Päivitys asennettu versioon {result['applied_version']}. Käynnistä sovellus uudelleen."
+                })
+                return
+
+            self.send_json(400, {'error': 'unsupported_action'})
+        except Exception as e:
+            print(f"Maintenance update error: {e}")
+            self.send_json(500, {'error': str(e)})
 
     def do_POST(self):
         parsed_path = urllib.parse.urlparse(self.path)

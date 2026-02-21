@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- APP_VERSION: v1.2 -->
     <title>Ajoneuvon huoltoraportti</title>
     <link rel="stylesheet" href="./css/all.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';">
 
@@ -995,6 +996,47 @@
             color: #666;
             font-size: 14px;
         }
+        .maintenance-subheader {
+            font-size: 14px;
+            font-weight: 700;
+            color: #444;
+            margin: 6px 0 8px;
+        }
+        .maintenance-action-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .maintenance-action-btn {
+            border: 1px solid #cdd3d8;
+            background: #fff;
+            color: #33414a;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            min-width: 96px;
+        }
+        .maintenance-action-btn:hover:not(:disabled) {
+            background: #f3f6f8;
+            border-color: #bec6cc;
+        }
+        .maintenance-action-btn:disabled {
+            opacity: 0.7;
+            cursor: default;
+        }
+        .maintenance-status {
+            font-size: 13px;
+            color: #5c6770;
+        }
+        .maintenance-status.success {
+            color: #2f6f35;
+        }
+        .maintenance-status.error {
+            color: #a43d3d;
+        }
         .config-editor {
             display: flex;
             flex-direction: column;
@@ -1804,6 +1846,24 @@
         </div>
 
         <div class="document-section">
+            <div class="document-section-header">Ylläpito</div>
+            <div class="document-section-content">
+                <div class="maintenance-subheader">Tarkista päivitykset</div>
+                <div class="maintenance-action-row">
+                    <button type="button" id="btn-maintenance-update" class="maintenance-action-btn" onclick="handleMaintenanceUpdateAction()">Tarkista</button>
+                    <span id="maintenance-update-status" class="maintenance-status"></span>
+                </div>
+                <p class="config-help">Voit tarkistaa sovelluksen päivitykset painamalla Tarkista-nappia ja painamalla Päivitä, mikäli päivitys löytyy.</p>
+                <hr style="border:0; border-top:1px solid #eee; margin: 16px 0;">
+                <div class="maintenance-subheader">Varmuuskopiointi</div>
+                <div class="maintenance-action-row">
+                    <button type="button" class="maintenance-action-btn" onclick="downloadMaintenanceBackup()">Lataa varmuuskopio</button>
+                </div>
+                <p class="config-help" style="margin-bottom:0;">Lataa varmuuskopio tietokannasta <kbd>maintenance.db</kbd>, joka sisältää raportit ja asetukset. Valokuvaliitteet tietokannasta <kbd>attachments.db</kbd>)eivät sisälly varmuuskopioioon</p>
+            </div>
+        </div>
+
+        <div class="document-section">
             <div class="document-section-header">Muokkaa huoltokohteita</div>
             <div class="document-section-content">
                 <p class="config-help">Voit lisätä, nimetä uudelleen, järjestellä ja poistaa otsikoita tai kohteita. Tallennettujen raporttien alkuperäinen rakenne säilyy raportissa, joten vanhat raportit pysyvät tulostettavina myös asetusten muutosten jälkeen. Muuttuneet asetukset on päivitettävissä aiemmin tallennettuihin raportteihin, jolloin nimitykset, alikohdat ja järjestys päivittyvät. Kohteet jotka olivat raportilla aiemmin, mutta joita ei enää ole asetuksissa, löytyvät "Poistuneet huoltotoimenpiteet" -listasta kunnes etsit niille vastineen tai poistat ne raportilta.</p>
@@ -1995,6 +2055,13 @@
     let calendarLoadedRange = { start: '', end: '' };
     let calendarMenuDate = '';
     let reportDateSortDirection = '';
+    let maintenanceUpdateState = {
+        updateAvailable: false,
+        busy: false,
+        branch: '',
+        localVersion: '',
+        remoteVersion: ''
+    };
     const editorSuggestionState = {
         customer: { timerId: null, requestSerial: 0, activeIndex: -1, items: [] },
         plate: { timerId: null, requestSerial: 0, activeIndex: -1, items: [] }
@@ -2142,6 +2209,107 @@
         if (!usePasswordCheckbox.checked) {
             passwordInput.value = '';
         }
+    }
+
+    function getMaintenanceUpdateButton() {
+        return document.getElementById('btn-maintenance-update');
+    }
+
+    function getMaintenanceUpdateStatusElement() {
+        return document.getElementById('maintenance-update-status');
+    }
+
+    function setMaintenanceUpdateStatus(message, tone = '') {
+        const status = getMaintenanceUpdateStatusElement();
+        if (!status) return;
+        status.textContent = message || '';
+        status.classList.remove('success', 'error');
+        if (tone === 'success') status.classList.add('success');
+        if (tone === 'error') status.classList.add('error');
+    }
+
+    function renderMaintenanceUpdateControls() {
+        const btn = getMaintenanceUpdateButton();
+        if (!btn) return;
+        btn.textContent = maintenanceUpdateState.updateAvailable ? 'Päivitä' : 'Tarkista';
+        btn.disabled = !!maintenanceUpdateState.busy;
+    }
+
+    function setMaintenanceUpdateBusy(isBusy) {
+        maintenanceUpdateState.busy = !!isBusy;
+        renderMaintenanceUpdateControls();
+    }
+
+    async function checkForMaintenanceUpdate() {
+        setMaintenanceUpdateBusy(true);
+        setMaintenanceUpdateStatus('Tarkistetaan...', '');
+        try {
+            const res = await apiFetch(`api/maintenance_update?action=check&t=${Date.now()}`);
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data && data.error ? data.error : 'Päivityksen tarkistus epäonnistui.');
+            }
+            maintenanceUpdateState.updateAvailable = !!data.update_available;
+            maintenanceUpdateState.branch = data.branch || '';
+            maintenanceUpdateState.localVersion = data.local_version || '';
+            maintenanceUpdateState.remoteVersion = data.remote_version || '';
+            renderMaintenanceUpdateControls();
+            const statusMessage = data.status_message || '';
+            const statusTone = data.status_tone || (maintenanceUpdateState.updateAvailable ? 'success' : '');
+            if (statusMessage) {
+                setMaintenanceUpdateStatus(statusMessage, statusTone);
+            } else if (maintenanceUpdateState.updateAvailable) {
+                setMaintenanceUpdateStatus(`Päivitys saatavilla (${maintenanceUpdateState.localVersion} -> ${maintenanceUpdateState.remoteVersion}).`, 'success');
+            } else {
+                const versionText = maintenanceUpdateState.localVersion || maintenanceUpdateState.remoteVersion || 'tuntematon';
+                setMaintenanceUpdateStatus(`Sovellus on ajan tasalla (${versionText}).`, '');
+            }
+        } catch (error) {
+            maintenanceUpdateState.updateAvailable = false;
+            renderMaintenanceUpdateControls();
+            setMaintenanceUpdateStatus(`Virhe: ${error.message || 'päivitystä ei voitu tarkistaa.'}`, 'error');
+        } finally {
+            setMaintenanceUpdateBusy(false);
+        }
+    }
+
+    async function applyMaintenanceUpdate() {
+        setMaintenanceUpdateBusy(true);
+        setMaintenanceUpdateStatus('Ladataan päivitystä...', '');
+        try {
+            const branchPart = maintenanceUpdateState.branch ? `&branch=${encodeURIComponent(maintenanceUpdateState.branch)}` : '';
+            const res = await apiFetch(`api/maintenance_update?action=apply${branchPart}&t=${Date.now()}`);
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data && data.error ? data.error : 'Päivityksen asennus epäonnistui.');
+            }
+            maintenanceUpdateState.updateAvailable = false;
+            renderMaintenanceUpdateControls();
+            setMaintenanceUpdateStatus(data.message || 'Päivitys asennettu. Käynnistä sovellus uudelleen.', 'success');
+        } catch (error) {
+            renderMaintenanceUpdateControls();
+            setMaintenanceUpdateStatus(`Virhe: ${error.message || 'päivitystä ei voitu asentaa.'}`, 'error');
+        } finally {
+            setMaintenanceUpdateBusy(false);
+        }
+    }
+
+    async function handleMaintenanceUpdateAction() {
+        if (maintenanceUpdateState.busy) return;
+        if (maintenanceUpdateState.updateAvailable) {
+            await applyMaintenanceUpdate();
+            return;
+        }
+        await checkForMaintenanceUpdate();
+    }
+
+    function downloadMaintenanceBackup() {
+        const link = document.createElement('a');
+        link.href = `api/download_backup?t=${Date.now()}`;
+        link.download = '';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
     }
 
     function nextId(prefix) {
@@ -3235,6 +3403,7 @@
             mileageInput.addEventListener('input', updateMileageReferenceHint);
             mileageInput.addEventListener('change', updateMileageReferenceHint);
         }
+        renderMaintenanceUpdateControls();
         initEditorSuggestions();
         initReportDirtyTracking();
         initConfigDirtyTracking();
@@ -3328,6 +3497,7 @@
             preview.onerror = function() { preview.style.display = 'none'; delBtn.style.display = 'none'; };
             const newSetInput = document.getElementById('new-maintenance-set-name');
             if (newSetInput) newSetInput.value = '';
+            renderMaintenanceUpdateControls();
         });
         markCurrentConfigAsSaved();
     }
