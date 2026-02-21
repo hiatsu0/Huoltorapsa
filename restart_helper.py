@@ -47,15 +47,19 @@ def start_server_process(python_exe, server_script, workdir):
     kwargs = {
         "cwd": workdir,
         "env": {**os.environ, "HUOLTORAPSA_NO_BROWSER": "1", "HUOLTORAPSA_AUTO_RESTART": "1"},
-        "stdin": subprocess.DEVNULL,
-        "stdout": subprocess.DEVNULL,
-        "stderr": subprocess.DEVNULL,
         "close_fds": True,
     }
     if os.name == "nt":
-        flags = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+        # On Windows, open a new visible console so the user can see logs and stop with Ctrl+C.
+        flags = getattr(subprocess, "CREATE_NEW_CONSOLE", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
         kwargs["creationflags"] = flags
+        kwargs["stdin"] = None
+        kwargs["stdout"] = None
+        kwargs["stderr"] = None
     else:
+        kwargs["stdin"] = subprocess.DEVNULL
+        kwargs["stdout"] = subprocess.DEVNULL
+        kwargs["stderr"] = subprocess.DEVNULL
         kwargs["start_new_session"] = True
     subprocess.Popen(cmd, **kwargs)
 
