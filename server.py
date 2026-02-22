@@ -600,6 +600,7 @@ def init_db():
             "company_text": "Korjaamo Oy\nOsoite 1\n00100 Helsinki\nY-tunnus: 123456-7",
             "hide_na_in_print": True,
             "accent_color": "#009eb8",
+            "theme_mode": "auto",
             "status_labels": {
                 "done": "Suoritettu",
                 "not_done": "Ei tehty",
