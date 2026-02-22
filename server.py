@@ -354,6 +354,30 @@ def spawn_restart_helper_once():
             restart_pending = False
         return False, str(e)
 
+def schedule_posix_exec_restart_once(delay_seconds=0.7):
+    global restart_pending
+    with restart_state_lock:
+        if restart_pending:
+            return True, ""
+        restart_pending = True
+
+    script_path = os.path.join(get_app_root_dir(), "server.py")
+
+    def _restart():
+        try:
+            time.sleep(max(0.0, float(delay_seconds)))
+            os.environ["HUOLTORAPSA_NO_BROWSER"] = "1"
+            os.environ["HUOLTORAPSA_AUTO_RESTART"] = "1"
+            os.execv(sys.executable, [sys.executable, script_path])
+        except Exception as e:
+            print(f"POSIX exec restart failed: {e}")
+            with restart_state_lock:
+                global restart_pending
+                restart_pending = False
+
+    threading.Thread(target=_restart, daemon=True).start()
+    return True, ""
+
 def request_server_shutdown(delay_seconds=0.6):
     def _shutdown():
         time.sleep(max(0.0, float(delay_seconds)))
@@ -1022,7 +1046,10 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                 restart_scheduled = False
                 restart_error = ''
                 if auto_restart:
-                    restart_scheduled, restart_error = spawn_restart_helper_once()
+                    if os.name == 'nt':
+                        restart_scheduled, restart_error = spawn_restart_helper_once()
+                    else:
+                        restart_scheduled, restart_error = schedule_posix_exec_restart_once(0.7)
                 message = f"Päivitys asennettu versioon {result['applied_version']}."
                 if restart_scheduled:
                     message += " Palvelin käynnistetään uudelleen automaattisesti."
@@ -1037,7 +1064,7 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                     'restart_scheduled': restart_scheduled,
                     'message': message
                 })
-                if restart_scheduled:
+                if restart_scheduled and os.name == 'nt':
                     request_server_shutdown(0.7)
                 return
 
