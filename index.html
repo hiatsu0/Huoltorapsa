@@ -52,7 +52,7 @@
             --app-border: #cccccc;
             --app-border-soft: #e6e6e6;
             --app-card-border: #eeeeee;
-            --app-shadow: rgba(0, 0, 0, 0.1);
+            --app-shadow: rgba(0, 0, 0, 0.3);
         }
         html[data-theme-mode="light"] { color-scheme: light; }
         html[data-theme-mode="dark"] { color-scheme: dark; }
@@ -98,7 +98,7 @@
             margin: 0 auto;
             background: var(--app-surface-bg);
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 16px;
             box-shadow: 0 4px 6px var(--app-shadow);
             min-height: 90vh;
         }
@@ -117,9 +117,14 @@
             font-size: 21px;
             color: var(--app-text-strong);
         }
+        .app-title-icon {
+            color: var(--primary-color);
+            text-shadow:
+                0 0 6px color-mix(in srgb, var(--primary-color) 20%, transparent),
+                0 0 12px color-mix(in srgb, var(--primary-color) 16%, transparent);
+        }
 
         .nav-buttons button {
-            background: none;
             border: 1px solid var(--app-border);
             padding: 10px 10px;
             border-radius: 4px;
@@ -132,9 +137,25 @@
             gap: 3px;
             line-height: 1;
         }
+        .nav-buttons button:not(.primary):not(.danger):not(.active):not(.unsaved),
+        .calendar-day-menu-create,
+        .pagination-btn,
+        .maintenance-action-btn,
+        .cfg-btn:not(.cfg-btn-danger) {
+            background:
+                radial-gradient(135% 115% at 100% 100%, color-mix(in srgb, var(--primary-color) 10%, transparent), transparent 78%),
+                linear-gradient(to right, color-mix(in srgb, var(--primary-color) 3%, var(--app-surface-bg)), var(--app-surface-bg));
+        }
 
-        .nav-buttons button:hover {
-            background-color: color-mix(in srgb, var(--app-surface-bg) 70%, var(--app-text) 10%);
+        .nav-buttons button:not(.primary):not(.danger):not(.active):not(.unsaved):hover,
+        .calendar-day-menu-create:hover,
+        .pagination-btn:hover:not(:disabled),
+        .maintenance-action-btn:hover:not(:disabled),
+        .cfg-btn:not(.cfg-btn-danger):hover {
+            background:
+                radial-gradient(145% 125% at 100% 100%, color-mix(in srgb, var(--primary-color) 16%, transparent), transparent 76%),
+                linear-gradient(to right, color-mix(in srgb, var(--primary-color) 6%, var(--app-surface-bg)), var(--app-surface-bg));
+            border-color: color-mix(in srgb, var(--primary-color) 26%, var(--app-border));
         }
 
         .nav-buttons button.primary {
@@ -304,7 +325,7 @@
                 border-color: color-mix(in srgb, var(--primary-color) 20%, var(--app-border));
                 border-radius: 8px;
                 background:
-                    radial-gradient(150px 64px at 100% 0%, color-mix(in srgb, var(--primary-color) 14%, transparent), transparent 70%),
+                    radial-gradient(250px 164px at 100% 0%, color-mix(in srgb, var(--primary-color) 12%, transparent), transparent 70%),
                     linear-gradient(to bottom, color-mix(in srgb, var(--primary-color) 6%, var(--app-surface-bg)), var(--app-surface-bg));
                 box-shadow:
                     0 3px 10px color-mix(in srgb, var(--app-shadow) 50%, transparent),
@@ -317,7 +338,7 @@
             }
             .report-list tbody tr:hover {
                 background:
-                    radial-gradient(170px 74px at 100% 0%, color-mix(in srgb, var(--primary-color) 22%, transparent), transparent 68%),
+                    radial-gradient(270px 174px at 100% 0%, color-mix(in srgb, var(--primary-color) 22%, transparent), transparent 68%),
                     linear-gradient(to bottom, color-mix(in srgb, var(--primary-color) 10%, var(--app-surface-bg)), var(--app-surface-bg));
                 border-color: color-mix(in srgb, var(--primary-color) 42%, var(--app-border));
                 box-shadow:
@@ -325,7 +346,7 @@
                     0 0 0 1px color-mix(in srgb, var(--primary-color) 18%, transparent),
                     0 0 22px color-mix(in srgb, var(--primary-color) 16%, transparent),
                     inset 0 1px 0 color-mix(in srgb, var(--app-text) 10%, transparent);
-                transform: translateY(-2px);
+                transform: translateX(-3px);
             }
             .report-list tbody td {
                 display: block;
@@ -498,6 +519,11 @@
         .calendar-day:hover {
             border-color: #bbb;
             background: #f8f8f8;
+            color: #1b252d;
+            -webkit-text-fill-color: #1b252d;
+        }
+        .calendar-day:hover .day-count {
+            color: #1b252d;
         }
         .calendar-day.today {
 			border: 2.5px solid;
@@ -609,7 +635,6 @@
             white-space: nowrap;
         }
         .calendar-day-menu-create {
-            background: none;
             border: 1px solid var(--app-border);
             padding: 10px 10px;
             border-radius: 4px;
@@ -623,9 +648,6 @@
             width: 100%;
             justify-content: center;
             color: var(--app-text);
-        }
-        .calendar-day-menu-create:hover {
-            background-color: color-mix(in srgb, var(--app-surface-bg) 70%, var(--app-text) 10%);
         }
         #dashboard-view.calendar-mode .search-bar,
         #dashboard-view.calendar-mode .search-bar-wrap,
@@ -650,7 +672,6 @@
         }
         .pagination-btn {
             padding: 8px 16px;
-            background: var(--app-surface-bg);
             border: 1px solid var(--app-border);
             border-radius: 4px;
             cursor: pointer;
@@ -1094,17 +1115,12 @@
         }
         .maintenance-action-btn {
             border: 1px solid var(--app-border);
-            background: var(--app-surface-bg);
             color: var(--app-text);
             border-radius: 4px;
             padding: 8px 12px;
             font-size: 13px;
             cursor: pointer;
             min-width: 96px;
-        }
-        .maintenance-action-btn:hover:not(:disabled) {
-            background: color-mix(in srgb, var(--app-surface-bg) 80%, var(--app-text) 8%);
-            border-color: color-mix(in srgb, var(--app-border) 85%, var(--app-text) 15%);
         }
         .maintenance-action-btn:disabled {
             opacity: 0.7;
@@ -1248,14 +1264,10 @@
         .cfg-btn {
             border: 1px solid var(--app-border);
             border-radius: 4px;
-            background: var(--app-surface-bg);
             color: var(--app-text);
             cursor: pointer;
             font-size: 13px;
             padding: 6px 9px;
-        }
-        .cfg-btn:hover {
-            background: color-mix(in srgb, var(--app-surface-bg) 85%, var(--app-text) 8%);
         }
         .cfg-btn-danger {
             border-color: #e0a7ad;
@@ -1290,6 +1302,15 @@
             font-weight: 600;
             color: var(--app-text-muted);
             user-select: none;
+            list-style: none;
+        }
+        .config-json-details summary::-webkit-details-marker { display: none; }
+        .config-json-details summary::marker { content: ''; }
+        .config-json-details summary::before {
+            content: '▶︎ ';
+        }
+        .config-json-details[open] summary::before {
+            content: '▼︎ ';
         }
         .config-json-details[open] summary {
             margin-bottom: 8px;
@@ -1479,19 +1500,21 @@
         .auth-dialog {
             width: 100%;
             max-width: 360px;
-            background: #fff;
+            background: var(--app-surface-bg);
             border-radius: 8px;
-            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
-            border: 1px solid #e5e5e5;
+            box-shadow: 0 14px 36px color-mix(in srgb, var(--app-shadow) 85%, transparent);
+            border: 1px solid var(--app-border-soft);
             padding: 18px;
+            color: var(--app-text);
         }
         .auth-dialog h3 {
             margin: 0 0 8px;
             font-size: 18px;
+            color: var(--app-text-strong);
         }
         .auth-dialog p {
             margin: 0 0 12px;
-            color: #555;
+            color: var(--app-text-muted);
             font-size: 14px;
         }
         .auth-actions {
@@ -1501,12 +1524,16 @@
             gap: 8px;
         }
         .auth-actions button {
-            border: 1px solid #ccc;
-            background: #fff;
+            border: 1px solid var(--app-border);
+            background: var(--app-surface-bg);
             border-radius: 4px;
             cursor: pointer;
             padding: 8px 12px;
             font-size: 13px;
+            color: var(--app-text);
+        }
+        .auth-actions button:hover:not(.primary) {
+            background: color-mix(in srgb, var(--app-surface-bg) 85%, var(--app-text) 8%);
         }
         .auth-actions button.primary {
             border-color: var(--primary-color);
@@ -1682,7 +1709,7 @@
 
 <div class="container">
     <div class="header">
-        <h1><i class="fas fa-wrench" style="color:var(--primary-color)"></i> Huoltoraportti</h1>
+        <h1><i class="fas fa-wrench app-title-icon"></i> Huoltoraportti</h1>
         <div class="nav-buttons">
             <button onclick="showDashboard()">
                 <i class="fas fa-list"></i> 
@@ -1964,8 +1991,7 @@
                     <span id="maintenance-update-status" class="maintenance-status"></span>
                 </div>
                 <p class="config-help">Voit tarkistaa sovelluksen päivitykset painamalla Tarkista-nappia ja painamalla Päivitä, mikäli päivitys löytyy.</p>
-                <hr style="border:0; border-top:1px solid #eee; margin: 16px 0;">
-                <div class="maintenance-subheader">Varmuuskopiointi</div>
+                <div class="maintenance-subheader" style="margin-top: 16px;">Varmuuskopiointi</div>
                 <div class="maintenance-action-row">
                     <button type="button" class="maintenance-action-btn" onclick="downloadMaintenanceBackup()">Lataa varmuuskopio</button>
                 </div>
@@ -5021,7 +5047,7 @@
 
             const summaryCaret = document.createElement('span');
             summaryCaret.className = 'maintenance-set-summary-caret';
-            summaryCaret.textContent = card.open ? '▼' : '▶';
+            summaryCaret.textContent = card.open ? '\u25BC\uFE0E' : '\u25B6\uFE0E';
 
             const summaryName = document.createElement('span');
             summaryName.textContent = (set.name || 'Nimeton huoltosetti');
@@ -5040,7 +5066,7 @@
             card.addEventListener('toggle', () => {
                 if (card.open) maintenanceSetExpandedIds.add(set.id);
                 else maintenanceSetExpandedIds.delete(set.id);
-                summaryCaret.textContent = card.open ? '▼' : '▶';
+                summaryCaret.textContent = card.open ? '\u25BC\uFE0E' : '\u25B6\uFE0E';
             });
 
             const body = document.createElement('div');

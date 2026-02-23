@@ -47,6 +47,10 @@ SERVER_INSTANCE = None
 restart_state_lock = threading.Lock()
 restart_pending = False
 
+class ThreadingMaintenanceServer(socketserver.ThreadingTCPServer):
+    allow_reuse_address = True
+    daemon_threads = True
+
 def read_config_value(key):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -1296,8 +1300,7 @@ if __name__ == "__main__":
                 webbrowser.open(f'http://localhost:{PORT}/')
             threading.Timer(1.5, open_browser).start()
 
-        socketserver.TCPServer.allow_reuse_address = True
-        with socketserver.TCPServer(("", PORT), MaintenanceRequestHandler) as httpd:
+        with ThreadingMaintenanceServer(("", PORT), MaintenanceRequestHandler) as httpd:
             SERVER_INSTANCE = httpd
             httpd.serve_forever()
 
