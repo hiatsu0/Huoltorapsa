@@ -4,8 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- APP_VERSION: v1.3 -->
-    <title>Ajoneuvon huoltoraportti</title>
+    <title>Huoltoraportti</title>
     <link rel="stylesheet" href="./css/all.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';">
+    <script>
+        (function () {
+            try {
+                var root = document.documentElement;
+                var accent = String(localStorage.getItem('huoltorapsa_accent_color') || '').trim().toLowerCase();
+                if (/^#[0-9a-f]{6}$/.test(accent)) {
+                    root.style.setProperty('--primary-color', accent);
+                }
+                var mode = String(localStorage.getItem('huoltorapsa_theme_mode') || '').trim().toLowerCase();
+                if (mode !== 'light' && mode !== 'dark' && mode !== 'auto') return;
+                var effective = mode;
+                if (mode === 'auto') {
+                    try {
+                        effective = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+                    } catch (e) {
+                        effective = 'light';
+                    }
+                }
+                root.dataset.themeMode = mode;
+                root.dataset.themeEffective = effective;
+            } catch (e) {}
+        })();
+    </script>
 
     <style>
         :root {
@@ -19,7 +42,7 @@
             --success-bg: rgba(150, 193, 31, 0.1);
             --warning-bg: rgba(255, 0, 0, 0.1);
             --neutral-bg: rgba(199, 199, 199, 0.1);
-            --app-page-bg: #e9ecef;
+            --app-page-bg: color-mix(in srgb, var(--primary-color) 7%, #f3f5f7);
             --app-surface-bg: #ffffff;
             --app-surface-muted: #f4f4f4;
             --app-surface-soft: #f8f9fa;
@@ -34,7 +57,7 @@
         html[data-theme-mode="light"] { color-scheme: light; }
         html[data-theme-mode="dark"] { color-scheme: dark; }
         html[data-theme-effective="dark"] {
-            --app-page-bg: #15181b;
+            --app-page-bg: color-mix(in srgb, var(--primary-color) 8%, #14171a);
             --app-surface-bg: #202529;
             --app-surface-muted: #2a3137;
             --app-surface-soft: #262c31;
@@ -2102,7 +2125,10 @@
     };
     const statusTexts = { ...DEFAULT_STATUS_TEXTS };
     const DEFAULT_ACCENT_COLOR = '#009eb8';
+    const ACCENT_COLOR_STORAGE_KEY = 'huoltorapsa_accent_color';
     const DEFAULT_THEME_MODE = 'auto';
+    const THEME_MODE_STORAGE_KEY = 'huoltorapsa_theme_mode';
+    const THEME_EFFECTIVE_STORAGE_KEY = 'huoltorapsa_theme_effective';
     const STATIC_LOGO_ID = 'company_logo';
     const CALENDAR_WEEKDAY_LABELS = ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'];
     const CALENDAR_MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat('fi-FI', { month: 'long', year: 'numeric' });
@@ -2527,7 +2553,12 @@
     }
 
     function applyAccentColor(color) {
-        document.documentElement.style.setProperty('--primary-color', normalizeAccentColor(color));
+        const normalized = normalizeAccentColor(color);
+        document.documentElement.style.setProperty('--primary-color', normalized);
+        try {
+            localStorage.setItem(ACCENT_COLOR_STORAGE_KEY, normalized);
+        } catch (e) {}
+        return normalized;
     }
 
     function normalizeThemeMode(value) {
@@ -2551,6 +2582,10 @@
         const root = document.documentElement;
         root.dataset.themeMode = mode;
         root.dataset.themeEffective = effective;
+        try {
+            localStorage.setItem(THEME_MODE_STORAGE_KEY, mode);
+            localStorage.setItem(THEME_EFFECTIVE_STORAGE_KEY, effective);
+        } catch (e) {}
         return mode;
     }
 
@@ -3533,7 +3568,11 @@
         const authInput = document.getElementById('auth-password-input');
         const usePwCheckbox = document.getElementById('conf_use_password');
         const themeModeSelect = document.getElementById('conf_theme_mode');
-        applyThemeMode(DEFAULT_THEME_MODE);
+        let cachedThemeMode = DEFAULT_THEME_MODE;
+        try {
+            cachedThemeMode = normalizeThemeMode(localStorage.getItem(THEME_MODE_STORAGE_KEY));
+        } catch (e) {}
+        applyThemeMode(cachedThemeMode);
         if (window.matchMedia) {
             systemThemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
             if (systemThemeMediaQuery && typeof systemThemeMediaQuery.addEventListener === 'function') {
