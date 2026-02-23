@@ -50,8 +50,10 @@ Sovelluksen Asetukset-näkymässä voit:
 3. Muokata huoltotehtäviä visuaalisella editorilla (tai suoraan JSON-dataa muokaten).
 4. Luoda ja hallita huoltosettejä.
 5. Muuttaa statustekstit (Suoritettu / Ei tehty / Ei sisälly)
-6. Valita korostusvärin.
+6. Valita korostusvärin ja tumman tai vaalean teeman.
 7. Ottaa salasanasuojauksen käyttöön (salasanan nollaus tarvittaessa: <code>python3 resetpw.py</code>).
+8. Ladata asetuksista ja merkinnöistä varmuuskopion.
+9. Päivittää sovelluksen uusimman version tästä reposta.
 
 
 ## 🛠️ Tekninen toteutus
