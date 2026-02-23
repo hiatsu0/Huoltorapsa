@@ -3932,11 +3932,16 @@
         const menu = document.getElementById('calendar-day-menu');
         const title = document.getElementById('calendar-day-menu-title');
         const list = document.getElementById('calendar-day-menu-list');
+        const createButtonLabel = document.querySelector('#calendar-day-menu-create span');
         if (!menu || !title || !list) return;
 
         calendarMenuDate = dateIso;
         title.textContent = formatCalendarDayLabel(dateIso);
         list.innerHTML = '';
+        if (createButtonLabel) {
+            const todayIso = formatIsoDate(new Date());
+            createButtonLabel.textContent = (dateIso > todayIso) ? 'Uusi varaus' : 'Uusi raportti';
+        }
 
         const reports = getCalendarItemsForDate(dateIso);
         if (reports.length === 0) {
