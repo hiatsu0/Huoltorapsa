@@ -1277,7 +1277,7 @@ if __name__ == "__main__":
         init_db()
         print("")
         print("------------------------------------------------")
-        print("| Huoltorapsa v1.2 -palvelin | Makkesoft 2026  |")
+        print("| Huoltorapsa v1.3 -palvelin | Makkesoft 2026  |")
         print("------------------------------------------------")
         print("")
         print("Palvelin käynnistyy, voit pienentää tämän ikkunan.")

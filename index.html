@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- APP_VERSION: v1.2 -->
+    <!-- APP_VERSION: v1.3 -->
     <title>Ajoneuvon huoltoraportti</title>
     <link rel="stylesheet" href="./css/all.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';">
 
@@ -205,7 +205,7 @@
         .report-list th, .report-list td {
             text-align: left;
             padding: 12px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--app-border-soft);
         }
 
         .report-list th {
@@ -278,19 +278,31 @@
                 margin-bottom: 2px;
                 padding: 10px 12px;
                 border: 1px solid var(--app-card-border);
-                border-color: color-mix(in srgb, var(--primary-color) 24%, #d8e1e6);
+                border-color: color-mix(in srgb, var(--primary-color) 20%, var(--app-border));
                 border-radius: 8px;
-                background: var(--app-surface-bg);
-                box-shadow: 0 2px 8px color-mix(in srgb, var(--primary-color) 9%, transparent);
-                transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+                background:
+                    radial-gradient(150px 64px at 100% 0%, color-mix(in srgb, var(--primary-color) 14%, transparent), transparent 70%),
+                    linear-gradient(to bottom, color-mix(in srgb, var(--primary-color) 6%, var(--app-surface-bg)), var(--app-surface-bg));
+                box-shadow:
+                    0 3px 10px color-mix(in srgb, var(--app-shadow) 50%, transparent),
+                    0 0 0 1px color-mix(in srgb, var(--primary-color) 10%, transparent),
+                    inset 0 1px 0 color-mix(in srgb, var(--app-text) 8%, transparent);
+                transition: border-color 0.15s ease, box-shadow 0.18s ease, background 0.18s ease, transform 0.15s ease;
             }
             .report-list tbody tr:last-child {
                 margin-bottom: 0;
             }
             .report-list tbody tr:hover {
-                background: var(--app-surface-bg);
-                border-color: color-mix(in srgb, var(--primary-color) 38%, #bccfd8);
-                box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-color) 14%, transparent);
+                background:
+                    radial-gradient(170px 74px at 100% 0%, color-mix(in srgb, var(--primary-color) 22%, transparent), transparent 68%),
+                    linear-gradient(to bottom, color-mix(in srgb, var(--primary-color) 10%, var(--app-surface-bg)), var(--app-surface-bg));
+                border-color: color-mix(in srgb, var(--primary-color) 42%, var(--app-border));
+                box-shadow:
+                    0 8px 20px color-mix(in srgb, var(--app-shadow) 68%, transparent),
+                    0 0 0 1px color-mix(in srgb, var(--primary-color) 18%, transparent),
+                    0 0 22px color-mix(in srgb, var(--primary-color) 16%, transparent),
+                    inset 0 1px 0 color-mix(in srgb, var(--app-text) 10%, transparent);
+                transform: translateY(-2px);
             }
             .report-list tbody td {
                 display: block;
@@ -332,9 +344,14 @@
                     "check plate plate";
             }
             .view.selection-mode .report-list tbody tr.row-selected {
-                background: color-mix(in srgb, var(--primary-color) 10%, var(--app-surface-bg));
-                border-color: color-mix(in srgb, var(--primary-color) 52%, #b7cad3);
-                box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 24%, transparent);
+                background:
+                    radial-gradient(150px 70px at 100% 0%, color-mix(in srgb, var(--primary-color) 18%, transparent), transparent 68%),
+                    linear-gradient(to bottom, color-mix(in srgb, var(--primary-color) 10%, var(--app-surface-bg)), var(--app-surface-bg));
+                border-color: color-mix(in srgb, var(--primary-color) 46%, var(--app-border));
+                box-shadow:
+                    0 0 0 1px color-mix(in srgb, var(--primary-color) 24%, transparent),
+                    0 4px 14px color-mix(in srgb, var(--primary-color) 12%, transparent),
+                    inset 0 1px 0 color-mix(in srgb, var(--app-text) 10%, transparent);
             }
             .view.selection-mode .report-list tbody td.col-select {
                 display: flex;
@@ -460,6 +477,7 @@
             background: #f8f8f8;
         }
         .calendar-day.today {
+			border: 2.5px solid;
             border-color: var(--primary-color);
         }
         .calendar-day .day-number {
@@ -480,15 +498,15 @@
             background: rgba(255, 255, 255, 0.65);
         }
         .calendar-day.has-reports-1 {
-            background: color-mix(in srgb, var(--primary-color) 18%, var(--app-surface-bg));
+            background: color-mix(in srgb, var(--primary-color) 28%, var(--app-surface-bg));
             border-color: color-mix(in srgb, var(--primary-color) 36%, var(--app-card-border));
         }
         .calendar-day.has-reports-2 {
-            background: color-mix(in srgb, var(--primary-color) 32%, var(--app-surface-bg));
+            background: color-mix(in srgb, var(--primary-color) 42%, var(--app-surface-bg));
             border-color: color-mix(in srgb, var(--primary-color) 52%, var(--app-card-border));
         }
         .calendar-day.has-reports-3 {
-            background: color-mix(in srgb, var(--primary-color) 48%, var(--app-surface-bg));
+            background: color-mix(in srgb, var(--primary-color) 56%, var(--app-surface-bg));
             border-color: color-mix(in srgb, var(--primary-color) 68%, var(--app-card-border));
         }
         .calendar-controls {
@@ -1928,7 +1946,7 @@
                 <div class="maintenance-action-row">
                     <button type="button" class="maintenance-action-btn" onclick="downloadMaintenanceBackup()">Lataa varmuuskopio</button>
                 </div>
-                <p class="config-help" style="margin-bottom:0;">Lataa varmuuskopio tietokannasta <kbd>maintenance.db</kbd>, joka sisältää raportit ja asetukset. Valokuvaliitteet tietokannasta <kbd>attachments.db</kbd>)eivät sisälly varmuuskopioioon</p>
+                <p class="config-help" style="margin-bottom:0;">Lataa varmuuskopio tietokannasta <kbd>maintenance.db</kbd>, joka sisältää raportit ja asetukset. Valokuvaliitteet tietokannasta <kbd>attachments.db</kbd> eivät sisälly varmuuskopioon.</p>
             </div>
         </div>
 
@@ -1986,7 +2004,7 @@
 </div>
 
 <!-- Footer (Outside Container) -->
-<div class="app-footer"><a class="app-footer-stealth-link" href="https://github.com/hiatsu0/Huoltorapsa/" target="_blank" rel="noopener noreferrer">v1.2</a> | Makkesoft 2026 | AGPLv3</div>
+<div class="app-footer"><a class="app-footer-stealth-link" href="https://github.com/hiatsu0/Huoltorapsa/" target="_blank" rel="noopener noreferrer">v1.3</a> | Makkesoft 2026 | AGPLv3</div>
 
 <!-- Image Modal -->
 <div id="image-modal" class="modal-overlay" onclick="closeImageModal()">
