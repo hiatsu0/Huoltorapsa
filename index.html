@@ -2941,6 +2941,10 @@
         return null;
     }
 
+    function getEditorSuggestionMinQueryLength(kind) {
+        return kind === 'plate' ? 1 : 2;
+    }
+
     function closeEditorSuggestionMenu(kind) {
         const state = editorSuggestionState[kind];
         const menu = getEditorSuggestionMenu(kind);
@@ -2983,6 +2987,9 @@
             button.type = 'button';
             button.className = 'field-suggestion-item';
             button.addEventListener('mousedown', event => {
+                event.preventDefault();
+            });
+            button.addEventListener('click', event => {
                 event.preventDefault();
                 applyEditorSuggestion(kind, item);
             });
@@ -3057,7 +3064,7 @@
         if (!state || !menu) return;
 
         const query = normalizeSuggestionQuery(queryValue);
-        if (query.length < 2) {
+        if (query.length < getEditorSuggestionMinQueryLength(kind)) {
             closeEditorSuggestionMenu(kind);
             return;
         }
@@ -3149,7 +3156,7 @@
             input.addEventListener('blur', () => handleEditorSuggestionBlur(kind));
             input.addEventListener('focus', () => {
                 const query = normalizeSuggestionQuery(input.value);
-                if (query.length >= 2) scheduleEditorSuggestionFetch(kind);
+                if (query.length >= getEditorSuggestionMinQueryLength(kind)) scheduleEditorSuggestionFetch(kind);
             });
         });
         document.addEventListener('click', handleEditorSuggestionOutsideClick);
@@ -4698,7 +4705,7 @@
         const item = findConfigItem(groupId, itemId);
         if (!item) return;
         if (!Array.isArray(item.subitems)) item.subitems = [];
-        item.subitems.push('Uusi lisatieto');
+        item.subitems.push('Uusi lisätieto');
         const subitemIndex = item.subitems.length - 1;
         renderConfigEditor();
         setTimeout(() => {
@@ -5636,7 +5643,7 @@
                         chip.dataset.subitemValue = subitem;
                         chip.textContent = subitem;
                         chip.setAttribute('aria-pressed', selectedSet.has(subitem) ? 'true' : 'false');
-                        chip.title = 'Valitse tulostettava lisatieto';
+                        chip.title = 'Valitse tulostettava lisätieto';
                         chip.addEventListener('click', () => {
                             const currentStatus = normalizeStatus(hiddenInput.value);
                             if (currentStatus === 'na') {

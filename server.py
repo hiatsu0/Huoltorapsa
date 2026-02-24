@@ -825,7 +825,8 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                         limit = 8
                     limit = max(1, min(limit, 20))
 
-                    if len(normalized_q) < 2:
+                    min_query_len = 1 if field in ('plate', 'license_plate') else 2
+                    if len(normalized_q) < min_query_len:
                         response_data = {'items': []}
                     elif field == 'customer':
                         terms = [term for term in normalized_q.split(' ') if term]
@@ -860,7 +861,7 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                         response_data = {'items': items}
                     elif field in ('plate', 'license_plate'):
                         plate_key = normalize_plate_lookup(normalized_q)
-                        if len(plate_key) < 2:
+                        if len(plate_key) < 1:
                             response_data = {'items': []}
                         else:
                             wildcard = f"%{plate_key}%"
