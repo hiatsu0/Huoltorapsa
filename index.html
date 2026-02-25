@@ -86,7 +86,7 @@
         @keyframes icon-spin-in {
             from {
                 opacity: 0;
-                transform: rotate(-120deg) scale(0.6);
+                transform: rotate(-690deg) scale(0.6);
             }
             to {
                 opacity: 1;
@@ -162,7 +162,9 @@
                 0 0 6px color-mix(in srgb, var(--primary-color) 20%, transparent),
                 0 0 12px color-mix(in srgb, var(--primary-color) 16%, transparent);
             display: inline-block;
-            animation: icon-spin-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            animation: icon-spin-in 2.0s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .nav-buttons button {
@@ -778,6 +780,16 @@
         }
         @media (max-width: 800px) { .form-row { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 400px) { .form-row { grid-template-columns: 1fr; } }
+        .general-settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        @media (max-width: 700px) {
+            .general-settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
         @media (max-width: 800px) {
             .general-info-row .preinfo-group { grid-column: 1 / -1; }
             .general-info-row .preinfo-input { height: 84px; }
@@ -1598,21 +1610,12 @@
             height: 100px;
             width: auto;
             border: 1px dashed #ccc;
-            margin-top: 10px;
+            margin-top: 0;
             display: block;
             object-fit: contain;
         }
         .logo-delete-btn {
-            margin-top: 5px;
-            padding: 5px 10px;
-            border: 1px solid var(--app-border);
-            border-radius: 4px;
-            background: var(--app-surface-bg);
-            color: var(--app-text);
-            cursor: pointer;
-        }
-        .logo-delete-btn:hover {
-            background: color-mix(in srgb, var(--app-surface-bg) 85%, var(--app-text) 8%);
+            margin-top: 0;
         }
 
         /* App Footer */
@@ -1984,27 +1987,32 @@
         <div class="document-section">
             <div class="document-section-header">Yleiset asetukset</div>
             <div class="document-section-content">
-                <div class="form-group">
-                    <label>Yrityksen logo</label>
-                    <input type="file" accept="image/*" onchange="uploadLogo(this)">
-                    <img id="conf_logo_preview" src="" class="logo-preview" style="display:none">
-                    <button id="btn_delete_logo" class="logo-delete-btn" onclick="deleteLogo()" style="display:none;">Poista logo</button>
-                </div>
-                <div class="form-group" style="margin-top: 12px;">
-                    <label for="conf_accent_color">Korostusväri</label>
-                    <input type="color" id="conf_accent_color" class="form-control" style="max-width: 140px; padding: 6px; height: 44px;">
-                </div>
-                <div class="form-group" style="margin-top: 12px;">
-                    <label for="conf_theme_mode">Teema</label>
-                    <select id="conf_theme_mode" class="form-control" style="max-width: 180px;">
-                        <option value="auto">Autom.</option>
-                        <option value="dark">Tumma</option>
-                        <option value="light">Vaalea</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin-top: 12px;">
-                    <label>Yrityksen tiedot</label>
-                    <textarea class="form-control" id="conf_company_text" rows="4"></textarea>
+                <div class="general-settings-grid">
+                    <div class="form-group">
+                        <label>Yrityksen tiedot</label>
+                        <textarea class="form-control" id="conf_company_text" rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Yrityksen logo</label>
+                        <input type="file" id="conf_logo_file" accept="image/*" onchange="uploadLogo(this)" style="display:none">
+                        <img id="conf_logo_preview" src="" class="logo-preview" style="display:none">
+                        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button type="button" class="cfg-btn" onclick="document.getElementById('conf_logo_file').click()">Valitse logo</button>
+                            <button id="btn_delete_logo" type="button" class="cfg-btn logo-delete-btn" onclick="deleteLogo()" style="display:none;">Poista logo</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="conf_theme_mode">Teema</label>
+                        <select id="conf_theme_mode" class="form-control" style="max-width: 180px;">
+                            <option value="auto">Autom.</option>
+                            <option value="dark">Tumma</option>
+                            <option value="light">Vaalea</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="conf_accent_color">Korostusväri</label>
+                        <input type="color" id="conf_accent_color" class="form-control" style="max-width: 140px; padding: 6px; height: 44px;">
+                    </div>
                 </div>
                 <div style="margin-top:15px">
                     <input type="checkbox" id="conf_hide_na">
@@ -3675,6 +3683,14 @@
         if (themeModeSelect) {
             themeModeSelect.addEventListener('change', () => applyThemeMode(themeModeSelect.value));
         }
+        const titleIcon = document.querySelector('.app-title-icon');
+        if (titleIcon) {
+            titleIcon.addEventListener('click', () => {
+                titleIcon.style.animation = 'none';
+                void titleIcon.offsetWidth;
+                titleIcon.style.animation = '';
+            });
+        }
         document.addEventListener('keydown', handleGlobalShortcuts);
         document.addEventListener('keydown', event => {
             if (event.key === 'Escape') {
@@ -3715,6 +3731,9 @@
     function switchView(viewId) {
         document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
         document.getElementById(viewId).classList.add('active');
+        if (viewId === 'editor-view') {
+            window.scrollTo(0, 0);
+        }
         closeAllEditorSuggestionMenus();
         // Reset selection mode when leaving dashboard
         if(viewId !== 'dashboard-view' && isSelectionMode) {
