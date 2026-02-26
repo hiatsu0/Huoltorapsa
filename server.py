@@ -29,11 +29,13 @@ ATTACHMENTS_DB = "attachments.db"
 AUTH_COOKIE_NAME = "huolto_auth"
 AUTH_PBKDF2_ITERATIONS = 120000
 AUTH_SESSION_TTL_SECONDS = 60 * 60 * 24 * 30
+AUTH_SESSION_CLEANUP_INTERVAL_SECONDS = 300
 AUTH_CONFIG_KEY = "api_auth"
 AUTH_LOGIN_MAX_FAILURES = 5
 AUTH_LOGIN_PENALTY_SECONDS = 60
 auth_sessions = {}
 auth_sessions_lock = threading.Lock()
+auth_sessions_last_cleanup_at = 0
 auth_login_failures = {}
 auth_login_failures_lock = threading.Lock()
 PLATE_SQL_EXPR = "REPLACE(REPLACE(REPLACE(UPPER(COALESCE(license_plate, '')), '-', ''), ' ', ''), '.', '')"
@@ -98,12 +100,76 @@ def verify_password(password, config):
     digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, iterations)
     return hmac.compare_digest(hash_hex, digest.hex())
 
-def cleanup_expired_sessions():
+def hash_auth_session_token(token):
+    value = str(token or "")
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+def store_auth_session(token, expires_at):
+    token_hash = hash_auth_session_token(token)
     now = int(time.time())
     with auth_sessions_lock:
-        expired = [token for token, expires_at in auth_sessions.items() if expires_at <= now]
-        for token in expired:
-            del auth_sessions[token]
+        conn = sqlite3.connect(DB_FILE, timeout=5)
+        c = conn.cursor()
+        c.execute(
+            "INSERT OR REPLACE INTO auth_sessions (token_hash, expires_at, created_at) VALUES (?, ?, ?)",
+            (token_hash, int(expires_at), now)
+        )
+        conn.commit()
+        conn.close()
+
+def delete_auth_session(token):
+    token_hash = hash_auth_session_token(token)
+    with auth_sessions_lock:
+        conn = sqlite3.connect(DB_FILE, timeout=5)
+        c = conn.cursor()
+        c.execute("DELETE FROM auth_sessions WHERE token_hash = ?", (token_hash,))
+        conn.commit()
+        conn.close()
+
+def clear_all_auth_sessions():
+    global auth_sessions_last_cleanup_at
+    with auth_sessions_lock:
+        conn = sqlite3.connect(DB_FILE, timeout=5)
+        c = conn.cursor()
+        c.execute("DELETE FROM auth_sessions")
+        conn.commit()
+        conn.close()
+        auth_sessions_last_cleanup_at = int(time.time())
+
+def cleanup_expired_sessions(force=False):
+    global auth_sessions_last_cleanup_at
+    now = int(time.time())
+    with auth_sessions_lock:
+        if not force and (now - int(auth_sessions_last_cleanup_at)) < AUTH_SESSION_CLEANUP_INTERVAL_SECONDS:
+            return
+        conn = sqlite3.connect(DB_FILE, timeout=5)
+        c = conn.cursor()
+        c.execute("DELETE FROM auth_sessions WHERE expires_at <= ?", (now,))
+        conn.commit()
+        conn.close()
+        auth_sessions_last_cleanup_at = now
+
+def is_auth_session_valid(token):
+    if not token:
+        return False
+    token_hash = hash_auth_session_token(token)
+    now = int(time.time())
+    with auth_sessions_lock:
+        conn = sqlite3.connect(DB_FILE, timeout=5)
+        c = conn.cursor()
+        c.execute("SELECT expires_at FROM auth_sessions WHERE token_hash = ?", (token_hash,))
+        row = c.fetchone()
+        if not row:
+            conn.close()
+            return False
+        expires_at = int(row[0] or 0)
+        if expires_at > now:
+            conn.close()
+            return True
+        c.execute("DELETE FROM auth_sessions WHERE token_hash = ?", (token_hash,))
+        conn.commit()
+        conn.close()
+        return False
 
 def get_client_identity(handler):
     try:
@@ -408,6 +474,11 @@ def init_db():
     
     c.execute('''CREATE TABLE IF NOT EXISTS config
                  (key TEXT PRIMARY KEY, value TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS auth_sessions
+                 (token_hash TEXT PRIMARY KEY,
+                  expires_at INTEGER NOT NULL,
+                  created_at INTEGER NOT NULL)''')
+    c.execute("CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires_at ON auth_sessions (expires_at)")
     
     # Default Maintenance Items
     c.execute("SELECT value FROM config WHERE key='maintenance_items'")
@@ -663,15 +734,7 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
         token = self.get_auth_cookie_token()
         if not token:
             return False
-
-        now = int(time.time())
-        with auth_sessions_lock:
-            expires_at = auth_sessions.get(token, 0)
-            if expires_at > now:
-                return True
-            if token in auth_sessions:
-                del auth_sessions[token]
-        return False
+        return is_auth_session_valid(token)
 
     def send_forbidden_auth_required(self):
         self.send_json(403, {'error': 'forbidden', 'auth_required': True})
@@ -724,8 +787,8 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
         reset_auth_failures(client_id)
         token = secrets.token_urlsafe(32)
         expires_at = int(time.time()) + AUTH_SESSION_TTL_SECONDS
-        with auth_sessions_lock:
-            auth_sessions[token] = expires_at
+        cleanup_expired_sessions()
+        store_auth_session(token, expires_at)
 
         cookie_value = (
             f"{AUTH_COOKIE_NAME}={token}; Path=/; Max-Age={AUTH_SESSION_TTL_SECONDS}; "
@@ -1236,8 +1299,10 @@ class MaintenanceRequestHandler(http.server.SimpleHTTPRequestHandler):
                                 c.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", (AUTH_CONFIG_KEY, json.dumps(build_password_hash(password))))
                             else:
                                 c.execute("DELETE FROM config WHERE key=?", (AUTH_CONFIG_KEY,))
+                                c.execute("DELETE FROM auth_sessions")
                                 with auth_sessions_lock:
-                                    auth_sessions.clear()
+                                    global auth_sessions_last_cleanup_at
+                                    auth_sessions_last_cleanup_at = int(time.time())
                             with auth_login_failures_lock:
                                 auth_login_failures.clear()
                     response_data = {'status': 'config_updated'}
