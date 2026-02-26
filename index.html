@@ -1786,7 +1786,7 @@
                 <span class="btn-text-short">Kalenteri</span>
             </button>
             <div class="dashboard-toolbar-actions">
-                <button onclick="toggleSelectionMode()" id="btn-select-mode">
+                <button onclick="toggleSelectionMode()" id="btn-select-mode" title="Valitse raportteja poistoa varten" aria-label="Valitse raportteja poistoa varten">
                     <i class="fas fa-check-square"></i>
                     <span class="btn-text">Valitse</span>
                 </button>
@@ -1818,8 +1818,8 @@
                 <thead>
                     <tr>
                         <th class="col-select"><input type="checkbox" id="select-all" onclick="toggleSelectAll()"></th>
-                        <th class="col-date sortable" onclick="toggleReportDateSort()">
-                            Pvm<span id="date-sort-indicator" class="sort-indicator">↕</span>
+                        <th class="col-date sortable" onclick="toggleReportDateSort()" title="Järjestä nykyinen sivu">
+                            Pvm<span id="date-sort-indicator" class="sort-indicator" title="Järjestä nykyinen sivu">↕</span>
                         </th>
                         <th class="col-customer">Asiakas</th>
                         <th class="col-plate">Rek.nro.</th>
@@ -1995,10 +1995,9 @@
                     <div class="form-group">
                         <label>Yrityksen logo</label>
                         <input type="file" id="conf_logo_file" accept="image/*" onchange="uploadLogo(this)" style="display:none">
-                        <img id="conf_logo_preview" src="" class="logo-preview" style="display:none">
-                        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button type="button" class="cfg-btn" onclick="document.getElementById('conf_logo_file').click()">Valitse logo</button>
-                            <button id="btn_delete_logo" type="button" class="cfg-btn logo-delete-btn" onclick="deleteLogo()" style="display:none;">Poista logo</button>
+                        <img id="conf_logo_preview" src="" class="logo-preview" style="display:none; margin-bottom: 10px">
+                        <div style="margin-top: 0px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button id="btn_delete_logo" type="button" class="cfg-btn logo-delete-btn" onclick="handleConfigLogoButtonClick()">Valitse logo</button>
                         </div>
                     </div>
                     <div class="form-group">
@@ -2212,6 +2211,7 @@
     const THEME_EFFECTIVE_STORAGE_KEY = 'huoltorapsa_theme_effective';
     const STATIC_LOGO_ID = 'company_logo';
     const CALENDAR_WEEKDAY_LABELS = ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'];
+    const DISPLAY_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'numeric', year: 'numeric' });
     const CALENDAR_MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat('fi-FI', { month: 'long', year: 'numeric' });
     const CALENDAR_DAY_LABEL_FORMATTER = new Intl.DateTimeFormat('fi-FI', {
         weekday: 'long',
@@ -2575,6 +2575,21 @@
         return `${y}-${m}-${d}`;
     }
 
+    function formatDisplayDate(value) {
+        const iso = normalizeIsoDate(value);
+        if (!iso) {
+            const raw = (typeof value === 'string') ? value.trim() : '';
+            return raw;
+        }
+        const parsed = parseIsoDate(iso);
+        if (!(parsed instanceof Date) || Number.isNaN(parsed.getTime())) return iso;
+        try {
+            return DISPLAY_DATE_FORMATTER.format(parsed);
+        } catch (e) {
+            return iso;
+        }
+    }
+
     function getMonthStart(date) {
         return new Date(date.getFullYear(), date.getMonth(), 1);
     }
@@ -2909,7 +2924,7 @@
     function formatSuggestionDate(value) {
         const iso = normalizeIsoDate(value);
         if (!iso) return '';
-        return iso;
+        return formatDisplayDate(iso);
     }
 
     function setMileageReference(value) {
@@ -3718,6 +3733,7 @@
     function showDashboard() {
         if (!confirmDiscardUnsavedReportChanges('Raportit')) return;
         if (!confirmDiscardUnsavedConfigChanges('Raportit')) return;
+        currentPage = 1;
         switchView('dashboard-view');
         if (isCalendarMode) {
             setCalendarMode(false);
@@ -3799,10 +3815,10 @@
             updateSecurityPasswordInputState();
 
             const preview = document.getElementById('conf_logo_preview');
-            const delBtn = document.getElementById('btn_delete_logo');
             preview.src = `api/attachment?id=${STATIC_LOGO_ID}&t=${Date.now()}`;
-            preview.onload = function() { preview.style.display = 'block'; delBtn.style.display = 'inline-block'; };
-            preview.onerror = function() { preview.style.display = 'none'; delBtn.style.display = 'none'; };
+            setConfigLogoButtonMode(false);
+            preview.onload = function() { preview.style.display = 'block'; setConfigLogoButtonMode(true); };
+            preview.onerror = function() { preview.style.display = 'none'; setConfigLogoButtonMode(false); };
             const newSetInput = document.getElementById('new-maintenance-set-name');
             if (newSetInput) newSetInput.value = '';
             renderMaintenanceUpdateControls();
@@ -3829,6 +3845,25 @@
             btn.classList.remove('active');
             btn.title = 'Vaihda kalenterinäkymään';
         }
+    }
+
+    function setConfigLogoButtonMode(hasLogo) {
+        const btn = document.getElementById('btn_delete_logo');
+        if (!btn) return;
+        const nextHasLogo = !!hasLogo;
+        btn.dataset.logoAction = nextHasLogo ? 'delete' : 'select';
+        btn.textContent = nextHasLogo ? 'Poista logo' : 'Valitse logo';
+    }
+
+    function handleConfigLogoButtonClick() {
+        const btn = document.getElementById('btn_delete_logo');
+        if (!btn) return;
+        if ((btn.dataset.logoAction || 'select') === 'delete') {
+            deleteLogo();
+            return;
+        }
+        const input = document.getElementById('conf_logo_file');
+        if (input) input.click();
     }
 
     function toggleCalendarMode() {
@@ -4329,7 +4364,7 @@
             // Customer Name: First line only
             let customerNameDisplay = r.customer_name || '-';
             customerNameDisplay = customerNameDisplay.split('\n')[0];
-            const dateDisplay = (r.report_date || '-').trim() || '-';
+            const dateDisplay = formatDisplayDate(r.report_date || '') || '-';
             const plateDisplay = (r.license_plate || '-').trim() || '-';
             const vehicleDisplay = (vehicleModel || '-').trim() || '-';
 
@@ -4414,7 +4449,7 @@
                 const preview = document.getElementById('conf_logo_preview');
                 preview.src = `api/attachment?id=${STATIC_LOGO_ID}&t=${Date.now()}`;
                 preview.style.display = 'block';
-                document.getElementById('btn_delete_logo').style.display = 'inline-block';
+                setConfigLogoButtonMode(true);
                 input.value = '';
             }
             reader.readAsDataURL(file);
@@ -4502,7 +4537,7 @@
         if(confirm("Poistetaanko logo?")) {
             await apiFetch('api/delete_attachment', { method: 'POST', body: JSON.stringify({ id: STATIC_LOGO_ID }) });
             document.getElementById('conf_logo_preview').style.display = 'none';
-            document.getElementById('btn_delete_logo').style.display = 'none';
+            setConfigLogoButtonMode(false);
         }
     }
 
@@ -5870,12 +5905,12 @@
         // Fill Data
         document.getElementById('p_company').textContent = (currentConfig.shop_settings && currentConfig.shop_settings.company_text) ? currentConfig.shop_settings.company_text : '';
         document.getElementById('p_customer').textContent = document.getElementById('customer_name').value;
-        document.getElementById('p_date').textContent = document.getElementById('report_date').value;
+        document.getElementById('p_date').textContent = formatDisplayDate(document.getElementById('report_date').value);
         document.getElementById('p_plate').textContent = document.getElementById('license_plate').value;
         document.getElementById('p_vin').textContent = document.getElementById('vin').value;
         document.getElementById('p_model').textContent = document.getElementById('vehicle_model').value;
         document.getElementById('p_engine').textContent = document.getElementById('engine_code').value;
-        document.getElementById('p_regdate').textContent = document.getElementById('registered_date').value;
+        document.getElementById('p_regdate').textContent = formatDisplayDate(document.getElementById('registered_date').value);
         document.getElementById('p_mileage').textContent = document.getElementById('mileage').value;
         const preInfo = document.getElementById('pre_info').value;
         document.getElementById('p_preinfo').textContent = preInfo;
